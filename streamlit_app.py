@@ -5,8 +5,7 @@ import streamlit as st
 from datetime import date, timedelta
 
 from arxiv_searcher import Paper, search, ARXIV_CATEGORIES
-from preprocessing import preprocess_and_vectorize, get_top_k_words
-from sklearn.cluster import KMeans
+from ml_utils import get_paper_clusters, MIN_PAPERS_FOR_CLUSTERING
 import numpy as np
 import plotly.express as px
 import pandas as pd
@@ -43,45 +42,6 @@ def search_papers(
         sort_by=sort_opt,
         category=category_option,
     )
-
-
-@st.cache_resource(show_spinner=False)
-def get_paper_clusters(papers: List[Paper], n_clusters: int = 1):
-    """
-    Perform clustering on a list of papers.
-    
-    Returns:
-        Tuple of (clusters_dict, top_words_dict)
-        - clusters_dict: {cluster_id: [papers]}
-        - top_words_dict: {cluster_id: [top_words]}
-    """
-    if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
-        return {0: papers}, {}
-    
-    if n_clusters > 10:
-        n_clusters = 10
-
-    try:
-        X = preprocess_and_vectorize(papers)
-        kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-        kmeans.fit(X)
-        labels = kmeans.labels_
-        top_clusters_words = get_top_k_words(kmeans.cluster_centers_, top_k=3)
-        clusters = {}
-        for idx, label in enumerate(labels):
-            label_int = int(label)
-            if label_int not in clusters:
-                clusters[label_int] = []
-            clusters[label_int].append(papers[idx])
-        
-        # Sort clusters by label keys to ensure consistent order
-        sorted_clusters = dict(sorted(clusters.items()))
-        return sorted_clusters, top_clusters_words
-    except Exception as e:
-        # Log error in console but return a fallback
-        print(f"Clustering error: {e}")
-        logging.error(f"Clustering error: {e}")
-        return {0: papers}, {}
 
 
 def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str]):
@@ -140,8 +100,6 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str]):
 
     return st.plotly_chart(fig, height=500)
 
-
-MIN_PAPERS_FOR_CLUSTERING = 10
 
 ORDER_BY_OPTIONS = {
     "Relevance": "relevance",
@@ -293,7 +251,12 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
     for i, tab in enumerate(tabs):
         with tab:
             if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
-                st.markdown(f"<div class='results-count'>{len(clusters[i])} Papers in the cluster | Key terms: {', '.join(top_words[i])}</div>", unsafe_allow_html=True)
+                # N - 1 cluster is the "Others" cluster
+                last_cluster = (i == len(clusters) - 1) and (len(clusters) >= 2)
+                if last_cluster:
+                    st.markdown(f"<div class='results-count'>{len(clusters[i])} Papers in the cluster | Others</div>", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"<div class='results-count'>{len(clusters[i])} Papers in the cluster | Key terms: {', '.join(top_words[i])}</div>", unsafe_allow_html=True)
 
             for paper in clusters[i]:
                 paper_date = paper.published.strftime("%d/%m/%Y")

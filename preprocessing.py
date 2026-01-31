@@ -40,19 +40,3 @@ def get_top_k_words(centroids, top_k=3):
         top_words[i] = [terms[idx] for idx in top_indices]
     
     return top_words
-
-
-def get_2d_coordinates(X):
-    """
-    Reduces the dimensions of the vector matrix X to 2 components using PCA.
-    """
-    if X is None:
-        return None
-    
-    # We need at least 2 samples/features for 2 components, but PCA handles it mostly. 
-    # If samples < 2, it might error or return less components.
-    if X.shape[0] < 2:
-        return None
-
-    pca = PCA(n_components=2, random_state=42)
-    return pca.fit_transform(X.toarray())
