@@ -131,6 +131,45 @@ div[data-testid="stExpander"] summary {
     color: var(--uofsc-garnet);
 }
 
+.cluster-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.cluster-paper-count, .cluster-keywords-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--uofsc-garnet);
+}
+
+.cluster-keywords {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.cluster-keyword-badge {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 600;
+    background-color: var(--uofsc-garnet);
+    color: white;
+}
+
+.cluster-uncategorized {
+    font-size: 0.85rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 500;
+    background-color: rgba(128, 128, 128, 0.2);
+    opacity: 0.8;
+}
+
 .stButton>button {
     background-color: var(--uofsc-garnet) !important;
     color: white !important;

@@ -11,6 +11,9 @@ dependencies = [
     "scikit-learn>=1.5,<1.8",
     "scipy<1.17",
     "plotly>=5.18.0",
+    "matplotlib>=3.10.8",
+    "scikit-fuzzy>=0.5.0",
+    "nltk>=3.9.2",
 ]
 
 [dependency-groups]

@@ -5,7 +5,7 @@ import streamlit as st
 from datetime import date, timedelta
 
 from arxiv_searcher import Paper, search, ARXIV_CATEGORIES
-from ml_utils import get_paper_clusters, MIN_PAPERS_FOR_CLUSTERING
+from ml_utils import get_paper_clusters, MIN_PAPERS_FOR_CLUSTERING, get_paper_clusters_fuzzy
 import numpy as np
 import plotly.express as px
 import pandas as pd
@@ -183,7 +183,7 @@ if search_button:
             st.session_state["search_results"]["papers"] = papers
 
             if papers:
-                clusters, top_words = get_paper_clusters(papers)
+                clusters, top_words = get_paper_clusters_fuzzy(papers)
                 st.session_state["search_results"]["clusters"] = clusters
                 st.session_state["search_results"]["top_words"] = top_words
 
@@ -234,8 +234,8 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 ordered_papers = []
                 all_labels = []
                 for label, p_list in clusters.items():
-                    for p in p_list:
-                        ordered_papers.append(p)
+                    for paper in p_list:
+                        ordered_papers.append(paper)
                         all_labels.append(str(label))
 
                 create_cluster_viz(ordered_papers, all_labels)
@@ -245,20 +245,35 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
         else:
             st.info("Not enough papers to visualize clusters.")
 
+
     # Show papers by cluster
     tabs = st.tabs([f"Cluster {k}" for k in clusters.keys()])
-
     for i, tab in enumerate(tabs):
         with tab:
-            if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
-                # N - 1 cluster is the "Others" cluster
-                last_cluster = (i == len(clusters) - 1) and (len(clusters) >= 2)
-                if last_cluster:
-                    st.markdown(f"<div class='results-count'>{len(clusters[i])} Papers in the cluster | Others</div>", unsafe_allow_html=True)
-                else:
-                    st.markdown(f"<div class='results-count'>{len(clusters[i])} Papers in the cluster | Key terms: {', '.join(top_words[i])}</div>", unsafe_allow_html=True)
+            cluster_id = list(clusters.keys())[i]
 
-            for paper in clusters[i]:
+            if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
+                # Cluster 0 is the "Uncategorized" cluster
+                if cluster_id == 0:
+                    st.markdown(f"""
+                        <div class='cluster-info'>
+                            <span class='cluster-paper-count'>📄 {len(clusters[cluster_id])} Papers</span>
+                            <span class='cluster-uncategorized'>Uncategorized</span>
+                        </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    keywords_badges = ''.join([f"<span class='cluster-keyword-badge'>{word}</span>" for word in top_words.get(cluster_id, [])])
+                    st.markdown(f"""
+                        <div class='cluster-info'>
+                            <span class='cluster-paper-count'>📄 {len(clusters[cluster_id])} Papers</span>
+                            <div class='cluster-keywords'>
+                                <span class='cluster-keywords-label'>Key Terms:</span>
+                                {keywords_badges}
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+            for paper in clusters[cluster_id]:
                 paper_date = paper.published.strftime("%d/%m/%Y")
                 other_cats_html = "".join(f'<div class="paper-other-categories">{cat}</div>' for cat in paper.categories[1:])
 
