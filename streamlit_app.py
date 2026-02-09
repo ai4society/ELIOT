@@ -5,7 +5,7 @@ import streamlit as st
 from datetime import date, timedelta
 
 from arxiv_searcher import Paper, search, ARXIV_CATEGORIES
-from ml_utils import get_paper_clusters, MIN_PAPERS_FOR_CLUSTERING, get_paper_clusters_fuzzy
+from ml_utils import MIN_PAPERS_FOR_CLUSTERING, get_paper_clusters_fuzzy
 import numpy as np
 import plotly.express as px
 import pandas as pd
@@ -31,17 +31,36 @@ st.markdown(
 )
 
 
-@st.cache_data(ttl=timedelta(hours=1), max_entries=1000, show_spinner=False)
 def search_papers(
     keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str
 ) -> List[Paper]:
-    return search(
-        keywords=keywords,
-        start_date=start_date,
-        end_date=end_date,
-        sort_by=sort_opt,
-        category=category_option,
+    import pandas as pd
+    import ast
+
+    # Avoid calling arxiv api for repetitive tests
+    df = pd.read_csv(
+        "datasets/papers_20220209-20260209_large_language_models_multi-agent_systems.csv",
+        parse_dates=["published", "updated"]
     )
+
+    records = df.to_dict("records")
+
+    for r in records:
+        if isinstance(r["authors"], str):
+            r["authors"] = ast.literal_eval(r["authors"])
+
+        if isinstance(r["categories"], str):
+            r["categories"] = ast.literal_eval(r["categories"])
+
+    return [Paper(**r) for r in records]
+
+    # return search(
+    #     keywords=keywords,
+    #     start_date=start_date,
+    #     end_date=end_date,
+    #     sort_by=sort_opt,
+    #     category=category_option,
+    # )
 
 
 def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str]):
@@ -224,7 +243,7 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
         with col_button:
             cluster_button = st.button("Cluster")
             if cluster_button:
-                clusters, top_words = get_paper_clusters(st.session_state['search_results']['papers'], n_clusters)
+                clusters, top_words = get_paper_clusters_fuzzy(st.session_state['search_results']['papers'], n_clusters)
                 st.session_state["search_results"]["clusters"] = clusters
                 st.session_state["search_results"]["top_words"] = top_words
  

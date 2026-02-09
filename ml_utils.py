@@ -5,87 +5,112 @@ import streamlit as st
 import skfuzzy as fuzz
 from sklearn.cluster import KMeans
 from arxiv_searcher import Paper
-from preprocessing import preprocess_and_vectorize, get_top_k_words
+from preprocessing import preprocess_and_vectorize, get_top_k_words, get_top_k_words_from_svd_centroids
+
 
 MIN_PAPERS_FOR_CLUSTERING = 10
-MEMBERSHIP_THRESHOLD = 0.2
-
-@st.cache_resource(show_spinner=False)
-def get_paper_clusters(papers: List[Paper], n_clusters: int = 5):
-    """
-    Perform clustering on a list of papers.
-    
-    Returns:
-        Tuple of (clusters_dict, top_words_dict)
-        - clusters_dict: {cluster_id: [papers]}
-        - top_words_dict: {cluster_id: [top_words]}
-    """
-    if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
-        return {0: papers}, {}
-    
-    if n_clusters > 10:
-        n_clusters = 10
-
-    try:
-        X = preprocess_and_vectorize(papers)
-        kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-        kmeans.fit(X)
-        labels = kmeans.labels_
-        top_clusters_words = get_top_k_words(kmeans.cluster_centers_, top_k=3)
-        clusters = {}
-        for idx, label in enumerate(labels):
-            label_int = int(label)
-            if label_int not in clusters:
-                clusters[label_int] = []
-            clusters[label_int].append(papers[idx])
-        
-        # Sort clusters by label keys to ensure consistent order
-        sorted_clusters = dict(sorted(clusters.items()))
-        return sorted_clusters, top_clusters_words
-    except Exception as e:
-        # Log error in console but return a fallback
-        print(f"Clustering error: {e}")
-        logging.error(f"Clustering error: {e}")
-        return {0: papers}, {}
 
 
 @st.cache_resource(show_spinner=False)
 def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
     """
     Performs Soft Clustering (Fuzzy C-Means) on a list of papers.
-
     Returns:
         Tuple (clusters_dict, top_words_dict)
-        - clusters_dict: {cluster_id: [list_of_papers]} (an article can be in more than 1 clusters)
+        - clusters_dict: {cluster_id: [list_of_papers]}
         - top_words_dict: {cluster_id: [top_words]}
     """
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
         return {0: papers}, {}
-
-    if n_clusters > 10: n_clusters = 10
+    
+    if n_clusters > 10: 
+        n_clusters = 10
+    
+    #threshold = min(1.5 * (1 / n_clusters), 0.3)
+    threshold = 0.3
 
     try:
-        X_sparse = preprocess_and_vectorize(papers)
-        X_dense = X_sparse.toarray().T 
+        X_normalized, svd, vec = preprocess_and_vectorize(papers, n_components=100)
+        
+        if X_normalized is None:
+            return {0: papers}, {}
+
+        X_transposed = X_normalized.T
+
         cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
-            X_dense, c=n_clusters, m=2, error=0.005, maxiter=1000
+            X_transposed, 
+            c=n_clusters, 
+            m=1.7,  # Fuzziness parameter
+            error=0.005, 
+            maxiter=1000, 
+            metric="cosine"
         )
 
-        top_clusters_words = get_top_k_words(cntr, top_k=3)
+        # Assign papers to clusters
         clusters = {i: [] for i in range(n_clusters)}
         
         for paper_idx in range(len(papers)):
             membership_values = u[:, paper_idx]
             
+            # Always assign to best cluster
+            best_cluster = int(np.argmax(membership_values))
+            clusters[best_cluster].append(papers[paper_idx])
+            
+            # Also assign to other clusters if membership is high enough
             for cluster_idx, prob in enumerate(membership_values):
-                if prob >= MEMBERSHIP_THRESHOLD:
+                if cluster_idx != best_cluster and prob >= threshold:
                     clusters[cluster_idx].append(papers[paper_idx])
-
-        # Remove clusters that may have become empty due to the threshold
-        clusters = {k: v for k, v in clusters.items() if len(v) > 0}
         
-        return dict(sorted(clusters.items())), top_clusters_words
+        # Remove empty clusters
+        clusters = {k: v for k, v in clusters.items() if len(v) > 0}
 
+        # Identify hard (primary) cluster assignment for each paper
+        primary_assignment = np.argmax(u, axis=0) # Cluster with the highest membership for each paper
+        
+        # This next loop avoids have same top k words equal for all clusters 
+    
+        # We recompute centroids using only hard assignments to obtain
+        # cluster-specific representations for keyword extraction.
+        # Soft FCM centroids collapsed to very similar TF-IDF vectors after SVD inversion,
+        # causing all clusters to share the same top-k words.
+
+        # Recalculate centroid for each cluster using only its hard assignments
+        new_centroids = []
+        for cluster_id in range(n_clusters):
+            # Index of the primary papers in this cluster
+            primary_indices = np.where(primary_assignment == cluster_id)[0]
+            
+            if len(primary_indices) > 0:
+                cluster_vectors = X_normalized[primary_indices]
+                new_centroid = cluster_vectors.mean(axis=0)
+                new_centroids.append(new_centroid)
+            else:
+                # Fallback: use Fuzzy's original centroid
+                new_centroids.append(cntr[cluster_id])
+        
+        new_centroids = np.array(new_centroids)
+        
+        top_clusters_words = get_top_k_words_from_svd_centroids(
+            new_centroids, svd, vec, top_k=3
+        )
+        
+        print(f"Fuzzy Clustering: {len(clusters)} clusters, FPC={fpc:.3f}")
+        print(f"SVD explained variance: {svd.explained_variance_ratio_.sum():.2%}")
+        print(f"Top words: {top_clusters_words}")
+
+        count_multi = 0
+        for paper_idx in range(len(papers)):
+            paper = papers[paper_idx]
+            num_clusters = sum(1 for cluster_papers in clusters.values() if paper in cluster_papers)
+            if num_clusters > 1:
+                count_multi += 1
+                
+        
+        print(f"\nTotal: {count_multi}/{len(papers)} papers in more than 1 cluster")
+        print("=" * 50 + "\n")
+
+        return dict(sorted(clusters.items())), top_clusters_words
+        
     except Exception as e:
         logging.error(f"Fuzzy Clustering error: {e}")
         return {0: papers}, {}
