@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score, confusion_matrix, silhouette_score
-from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score, silhouette_score
 
 
 def calculate_nmi(y_true, y_pred):

@@ -1,82 +1,66 @@
 
 import re
+from typing import List
 import nltk
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from typing import List, Tuple, Union
 
 
-try:
-    nltk.data.find('corpora/wordnet')
-    nltk.data.find('corpora/omw-1.4')
-    nltk.data.find('taggers/averaged_perceptron_tagger_eng')
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('wordnet')
-    nltk.download('omw-1.4')
-    nltk.download('averaged_perceptron_tagger_eng')
-    nltk.download('punkt')
+def ensure_nltk_resources():
+    resources = [
+        ("corpora/wordnet", "wordnet"),
+        ("corpora/omw-1.4", "omw-1.4"),
+        ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng"),
+        ("tokenizers/punkt", "punkt"),
+    ]
+    for path, pkg in resources:
+        try:
+            nltk.data.find(path)
+        except LookupError:
+            nltk.download(pkg)
 
 
-def get_wordnet_pos(treebank_tag):
-    if treebank_tag.startswith('J'):
+def get_wordnet_pos(treebank_tag: str):
+    if treebank_tag.startswith("J"):
         return wordnet.ADJ
-    elif treebank_tag.startswith('V'):
+    if treebank_tag.startswith("V"):
         return wordnet.VERB
-    elif treebank_tag.startswith('N'):
+    if treebank_tag.startswith("N"):
         return wordnet.NOUN
-    elif treebank_tag.startswith('R'):
+    if treebank_tag.startswith("R"):
         return wordnet.ADV
-    else:
-        return wordnet.NOUN
+    return wordnet.NOUN
 
-def clean_and_lemmatize(text: str) -> str:
+
+# instancie UMA vez (muito mais rápido)
+_LEMMATIZER = WordNetLemmatizer()
+
+def clean_and_lemmatize(text: str, use_pos: bool = True) -> str:
     """
-    Performs basic cleaning and lemmatization of the text with POS Tagging.
+    Cleans and lemmatizes the text.
+
+    Args:
+        text: text to clean and lemmatize
+        use_pos: whether to use POS tagging
     """
-    lemmatizer = WordNetLemmatizer()
 
     text = text.lower()
-    text = re.sub(r'[^a-z0-9\s]', ' ', text)
-    
-    tokens = nltk.word_tokenize(text)
-    
-    # POS Tagging
-    # Returns list of tuples (word, tag)
-    # Ex: [('running', 'VBG'), ('fast', 'RB')]
-    tagged_tokens = nltk.pos_tag(tokens)
-    
-    # Contextual Lemmatization
-    lemmatized_tokens = []
-    for word, tag in tagged_tokens:
-        wntag = get_wordnet_pos(tag)
-        # Lemmatize with the correct POS
-        lemma = lemmatizer.lemmatize(word, pos=wntag)
-        lemmatized_tokens.append(lemma)
-    
-    return " ".join(lemmatized_tokens)
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
 
-def preprocess_corpus(
-    documents: List[str],
-    ngram_range: Tuple[int, int] = (1, 2),
-    min_df: Union[int, float] = 2,
-    max_df: float = 0.7,
-    max_features: int = 1000
-):
-    print("Starting lemmatization and cleaning...")
-    preprocessed_docs = [clean_and_lemmatize(doc) for doc in documents]
-    
-    print("Starting vectorization (Tokenization, Stopwords, Pruning)...")
-    vectorizer = TfidfVectorizer(
-        ngram_range=ngram_range,
-        stop_words="english",
-        min_df=min_df,
-        max_df=max_df,
-        max_features=max_features
-    )
-    
-    X = vectorizer.fit_transform(preprocessed_docs)
-    
-    return X
+    tokens = nltk.word_tokenize(text)
+
+    if not use_pos:
+        return " ".join(_LEMMATIZER.lemmatize(t) for t in tokens)
+
+    tagged = nltk.pos_tag(tokens)
+    lemmas = [_LEMMATIZER.lemmatize(w, pos=get_wordnet_pos(tag)) for w, tag in tagged]
+    return " ".join(lemmas)
+
+
+def preprocess_texts(documents: List[str], use_pos: bool = True) -> List[str]:
+    """
+    Receives texts and returns preprocessed texts (strings)
+    """
+    return [clean_and_lemmatize(doc, use_pos=use_pos) for doc in documents]
 
