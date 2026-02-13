@@ -2,7 +2,6 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score, silhouette_score
 
-
 def calculate_nmi(y_true, y_pred):
     return normalized_mutual_info_score(y_true, y_pred)
 
@@ -16,6 +15,11 @@ def calculate_silhouette(X, y_pred):
     return silhouette_score(X, y_pred, metric='cosine')
 
 def calculate_accuracy(y_true, y_pred):
+    """
+    Measures the proportion of correctly assigned samples
+    after optimal matching between cluster labels and ground-truth classes via the
+    Hungarian algorithm.
+    """
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
     
@@ -28,4 +32,3 @@ def calculate_accuracy(y_true, y_pred):
     row_ind, col_ind = linear_sum_assignment(w.max() - w)
 
     return w[row_ind, col_ind].sum() / len(y_true)
-
