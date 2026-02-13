@@ -1,11 +1,24 @@
 import logging
-from typing import List, Dict, Tuple
+from typing import Dict, List, Tuple
+
+import matplotlib.pyplot as plt
 import numpy as np
-import streamlit as st
 import skfuzzy as fuzz
+import streamlit as st
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.metrics import (
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
+
 from arxiv_searcher import Paper
-from preprocessing import preprocess_and_vectorize, get_top_k_words, get_top_k_words_from_svd_centroids
+from preprocessing import (
+    preprocess_and_vectorize,
+    get_top_k_words,
+    get_top_k_words_from_svd_centroids,
+)
 
 
 MIN_PAPERS_FOR_CLUSTERING = 10
@@ -21,7 +34,7 @@ def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
         - top_words_dict: {cluster_id: [top_words]}
     """
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
-        return {0: papers}, {}
+        return {0: papers}, {}, {}
     
     if n_clusters > 10: 
         n_clusters = 10
@@ -33,7 +46,7 @@ def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
         X_normalized, svd, vec = preprocess_and_vectorize(papers, n_components=100)
         
         if X_normalized is None:
-            return {0: papers}, {}
+            return {0: papers}, {}, {}
 
         X_transposed = X_normalized.T
 
@@ -85,7 +98,7 @@ def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
                 new_centroid = cluster_vectors.mean(axis=0)
                 new_centroids.append(new_centroid)
             else:
-                # Fallback: use Fuzzy's original centroid
+                # Fallback use Fuzzy's original centroid
                 new_centroids.append(cntr[cluster_id])
         
         new_centroids = np.array(new_centroids)
@@ -93,9 +106,28 @@ def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
         top_clusters_words = get_top_k_words_from_svd_centroids(
             new_centroids, svd, vec, top_k=3
         )
-        
+
+        metrics = {}
+        y_pred = primary_assignment
+        plot_clusters_pca(X_normalized, y_pred)
+
+        metrics["SIL"] = silhouette_score(
+            X_normalized,
+            y_pred,
+            metric="cosine"
+        )
+        metrics["DBI"] = davies_bouldin_score(
+            X_normalized,
+            y_pred
+        )
+        metrics["CHI"] = calinski_harabasz_score(
+            X_normalized,
+            y_pred
+        )
+
         print(f"Fuzzy Clustering: {len(clusters)} clusters, FPC={fpc:.3f}")
         print(f"SVD explained variance: {svd.explained_variance_ratio_.sum():.2%}")
+        print(f"Metrics: {metrics}")
         print(f"Top words: {top_clusters_words}")
 
         count_multi = 0
@@ -104,13 +136,37 @@ def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
             num_clusters = sum(1 for cluster_papers in clusters.values() if paper in cluster_papers)
             if num_clusters > 1:
                 count_multi += 1
-                
-        
+
         print(f"\nTotal: {count_multi}/{len(papers)} papers in more than 1 cluster")
         print("=" * 50 + "\n")
 
-        return dict(sorted(clusters.items())), top_clusters_words
+        return dict(sorted(clusters.items())), top_clusters_words, metrics
         
     except Exception as e:
         logging.error(f"Fuzzy Clustering error: {e}")
-        return {0: papers}, {}
+        return {0: papers}, {}, {}
+
+
+def plot_clusters_pca(X, labels, save_path="clusters_pca.png"):
+    pca = PCA(n_components=2, random_state=42)
+    X_2d = pca.fit_transform(X)
+
+    plt.figure(figsize=(8, 6))
+
+    for k in np.unique(labels):
+        idx = labels == k
+        plt.scatter(
+            X_2d[idx, 0],
+            X_2d[idx, 1],
+            s=40,
+            alpha=0.7,
+            label=f"Cluster {k}"
+        )
+
+    plt.xlabel("PC1")
+    plt.ylabel("PC2")
+    plt.title("Clusters (PCA projection)")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300)
+    plt.close()

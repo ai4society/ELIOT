@@ -1,14 +1,15 @@
 import logging
+from datetime import date, timedelta
 from pathlib import Path
 from typing import List
-import streamlit as st
-from datetime import date, timedelta
 
-from arxiv_searcher import Paper, search, ARXIV_CATEGORIES
-from ml_utils import MIN_PAPERS_FOR_CLUSTERING, get_paper_clusters_fuzzy
 import numpy as np
-import plotly.express as px
 import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+from arxiv_searcher import ARXIV_CATEGORIES, Paper, search
+from ml_utils import MIN_PAPERS_FOR_CLUSTERING, get_paper_clusters_fuzzy
 
 st.set_page_config(
     page_title="Paper Explorer", page_icon="📚", layout="centered"
@@ -63,10 +64,11 @@ def search_papers(
     # )
 
 
-def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str]):
+def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metrics: dict):
     # Use Year and Cluster for visualization
     years = [p.published.year for p in ordered_papers]
     cluster_nums = [int(label) for label in all_labels]
+    K = len(set(all_labels))
     
     # Add jitter to avoid overlapping points since both axes are discrete
     np.random.seed(42)
@@ -81,7 +83,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str]):
         "Title": [p.title for p in ordered_papers],
         "Date": [p.published.strftime("%Y-%m-%d") for p in ordered_papers]
     })
-    
+
     fig = px.scatter(
         df_viz, 
         x="x", y="y", 
@@ -98,6 +100,13 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str]):
     
     # Format axes to show original categories (Years and Cluster IDs)
     fig.update_layout(
+        # Place legend outside the plotting area
+        legend=dict(
+            x=1.02,
+            y=1.0,
+            xanchor="left",
+            yanchor="top"
+        ),
         xaxis=dict(
             title="Year",
             tickmode='linear',
@@ -117,6 +126,30 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str]):
         hovermode="closest"
     )
 
+    # Dynamically compute vertical position of the metrics box
+    # We place metrics below the legend to avoid overlap.
+    padding = 0.09
+    metrics_y = max(0.02, 1 - (K + 1) * 0.055 - padding)
+
+    fig.add_annotation(
+        x=1.02,
+        y=metrics_y,
+        xref="paper",
+        yref="paper",
+        xanchor="left",
+        yanchor="top",
+        align="left",
+        showarrow=False,
+        text=(
+            "Metrics:<br>"
+            f"     <b>Davies–Bouldin</b>: {metrics['DBI']:.2f}<br>"
+            f"     <b>Calinski–Harabasz</b>: {metrics['CHI']:.2f}<br>"
+            f"     <b>Silhouette</b>: {metrics['SIL']:.3f}"
+        ),
+    )
+
+    fig.update_layout(margin=dict(r=160))
+
     return st.plotly_chart(fig, height=500)
 
 
@@ -129,7 +162,7 @@ DEFAULT_KEYWORDS = "large language models, multi-agent systems"
 
 # Initialize session state
 if "search_results" not in st.session_state:
-    st.session_state["search_results"] = {"papers": [], "searched": False, "clusters": {}, "top_words": {}}
+    st.session_state["search_results"] = {"papers": [], "searched": False, "clusters": {}, "top_words": {}, "metrics": {}}
 
 st.title("Paper Discovery", anchor=False)
 
@@ -202,9 +235,10 @@ if search_button:
             st.session_state["search_results"]["papers"] = papers
 
             if papers:
-                clusters, top_words = get_paper_clusters_fuzzy(papers)
+                clusters, top_words, metrics = get_paper_clusters_fuzzy(papers)
                 st.session_state["search_results"]["clusters"] = clusters
                 st.session_state["search_results"]["top_words"] = top_words
+                st.session_state["search_results"]["metrics"] = metrics
 
             st.session_state["search_results"]["searched"] = True
         except Exception as e:
@@ -243,11 +277,32 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
         with col_button:
             cluster_button = st.button("Cluster")
             if cluster_button:
-                clusters, top_words = get_paper_clusters_fuzzy(st.session_state['search_results']['papers'], n_clusters)
+                clusters, top_words, metrics = get_paper_clusters_fuzzy(st.session_state['search_results']['papers'], n_clusters)
                 st.session_state["search_results"]["clusters"] = clusters
                 st.session_state["search_results"]["top_words"] = top_words
+                st.session_state["search_results"]["metrics"] = metrics
  
         if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
+            if top_words:
+                cluster_ids = [k for k in clusters.keys() if top_words.get(k)]
+                for row_start in range(0, len(cluster_ids), 3):
+                    row_ids = cluster_ids[row_start:row_start + 3]
+                    cols = st.columns(3)
+                    for col, cid in zip(cols, row_ids):
+                        with col:
+                            if cid != 0:
+                                badges = ''.join([f"<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>{w}</span>" for w in top_words[cid]])
+                            else:
+                                badges = "<span style='font-size:0.65rem; padding:0.1rem 0.4rem; border-radius: 12px; background-color:rgba(128, 128, 128, 0.2);'>Uncategorized</span>"
+
+                            st.markdown(
+                                f"<div style='display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.3rem;'>"
+                                f"<span style='font-size:0.75rem; font-weight:700; color:var(--uofsc-garnet);'>Cluster {cid}</span>"
+                                f"{badges}"
+                                f"</div>",
+                                unsafe_allow_html=True
+                            )
+
             try:
                 # Flatten the clusters to match the dataframe indices
                 ordered_papers = []
@@ -257,13 +312,18 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                         ordered_papers.append(paper)
                         all_labels.append(str(label))
 
-                create_cluster_viz(ordered_papers, all_labels)
+                metrics = st.session_state["search_results"].get("metrics")
+
+                create_cluster_viz(ordered_papers, all_labels, {
+                    "DBI": metrics["DBI"],
+                    "CHI": metrics["CHI"],
+                    "SIL": metrics["SIL"]
+                    })
             except Exception as e:
                 st.warning("Visualization failed")
                 logging.error(f"Visualization failed: {e}")
         else:
             st.info("Not enough papers to visualize clusters.")
-
 
     # Show papers by cluster
     tabs = st.tabs([f"Cluster {k}" for k in clusters.keys()])
@@ -272,25 +332,32 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
             cluster_id = list(clusters.keys())[i]
 
             if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
+                base_html = """
+                <div class='cluster-info'>
+                    <span class='cluster-paper-count'>📄 {paper_count} Papers</span>
+                    {extra}
+                </div>
+                """
+                paper_count = len(clusters[cluster_id])
+
                 # Cluster 0 is the "Uncategorized" cluster
                 if cluster_id == 0:
-                    st.markdown(f"""
-                        <div class='cluster-info'>
-                            <span class='cluster-paper-count'>📄 {len(clusters[cluster_id])} Papers</span>
-                            <span class='cluster-uncategorized'>Uncategorized</span>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.markdown(
+                        base_html.format(
+                            paper_count=paper_count,
+                            extra="<span class='cluster-uncategorized'>Uncategorized</span>"
+                        ),
+                        unsafe_allow_html=True
+                    )
                 else:
                     keywords_badges = ''.join([f"<span class='cluster-keyword-badge'>{word}</span>" for word in top_words.get(cluster_id, [])])
-                    st.markdown(f"""
-                        <div class='cluster-info'>
-                            <span class='cluster-paper-count'>📄 {len(clusters[cluster_id])} Papers</span>
-                            <div class='cluster-keywords'>
-                                <span class='cluster-keywords-label'>Key Terms:</span>
-                                {keywords_badges}
-                            </div>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.markdown(
+                        base_html.format(
+                            paper_count=paper_count,
+                            extra=f"<div class='cluster-keywords'><span class='cluster-keywords-label'>Key Terms:</span>{keywords_badges}</div>"
+                        ),
+                        unsafe_allow_html=True
+                    )
 
             for paper in clusters[cluster_id]:
                 paper_date = paper.published.strftime("%d/%m/%Y")
