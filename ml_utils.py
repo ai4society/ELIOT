@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import skfuzzy as fuzz
 import streamlit as st
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, HDBSCAN
 from sklearn.decomposition import PCA
 from sklearn.metrics import (
     calinski_harabasz_score,
@@ -16,7 +16,6 @@ from sklearn.metrics import (
 from arxiv_searcher import Paper
 from preprocessing import (
     preprocess_and_vectorize,
-    get_top_k_words,
     get_top_k_words_from_svd_centroids,
 )
 
@@ -114,7 +113,7 @@ def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
         metrics["SIL"] = silhouette_score(
             X_normalized,
             y_pred,
-            metric="cosine"
+            metric="euclidean"
         )
         metrics["DBI"] = davies_bouldin_score(
             X_normalized,
@@ -145,6 +144,96 @@ def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
     except Exception as e:
         logging.error(f"Fuzzy Clustering error: {e}")
         return {0: papers}, {}, {}
+
+
+@st.cache_resource(show_spinner=False)
+def get_paper_clusters_hdbscan(papers: List[Paper]):
+    """
+    Performs HDBSCAN clustering on a list of papers.
+    Returns:
+        Tuple (clusters_dict, top_words_dict, metrics)
+        - clusters_dict: {cluster_id: [list_of_papers]}
+        - top_words_dict: {cluster_id: [top_words]}
+        - metrics: Dictionary of clustering quality metrics
+    """
+    if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
+        return {0: papers}, {}, {}
+    
+    try:
+        X_normalized, svd, vec = preprocess_and_vectorize(papers, n_components=100)
+        
+        if X_normalized is None:
+            return {0: papers}, {}, {}
+
+        clusterer = HDBSCAN(min_cluster_size=8, min_samples=1, metric="euclidean", cluster_selection_method="eom")
+        labels = clusterer.fit_predict(X_normalized)
+
+        clusters_by_label = {}
+        for i, lab in enumerate(labels):
+            clusters_by_label.setdefault(lab, []).append(i)
+
+        clusters = {}
+
+        # noise becomes Cluster 0 (Uncategorized)
+        noise_idx = clusters_by_label.get(-1, [])
+        clusters[0] = [papers[i] for i in noise_idx]
+
+        # real clusters remapped to 1..K
+        real_labels = sorted([l for l in clusters_by_label.keys() if l != -1])
+        label_to_cid = {l: (j + 1) for j, l in enumerate(real_labels)}
+
+        for l in real_labels:
+            cid = label_to_cid[l]
+            clusters[cid] = [papers[i] for i in clusters_by_label[l]]
+
+        # Remove empty
+        clusters = {k: v for k, v in clusters.items() if len(v) > 0}
+
+        # Centroids for keywords, excludes Cluster 0 (noise)
+        centroids = []
+        centroid_cids = []
+        for l in real_labels:
+            idx = np.array(clusters_by_label[l], dtype=int)
+            if len(idx) == 0:
+                continue
+            centroids.append(X_normalized[idx].mean(axis=0))
+            centroid_cids.append(label_to_cid[l])
+
+        centroids = np.vstack(centroids)
+        tmp = get_top_k_words_from_svd_centroids(centroids, svd, vec, top_k=3)  # keys 0..K-1
+        top_words = {cid: tmp[i] for i, cid in enumerate(centroid_cids)}        # keys 1..K
+        top_words[0] = []  
+
+        metrics = {}
+        mask = labels != -1
+        y_eval = labels[mask]
+        X_eval = X_normalized[mask]
+
+        if len(np.unique(y_eval)) >= 2:
+            metrics["SIL"] = silhouette_score(X_eval, y_eval, metric="euclidean")
+            metrics["DBI"] = davies_bouldin_score(X_eval, y_eval)
+            metrics["CHI"] = calinski_harabasz_score(X_eval, y_eval)
+        else:
+            metrics = {"SIL": 0, "DBI": 0, "CHI": 0}
+
+        noise_ratio = float(np.mean(labels == -1))
+
+        plot_labels = np.zeros(len(papers), dtype=int)
+        for l in real_labels:
+            cid = label_to_cid[l]
+            plot_labels[clusters_by_label[l]] = cid
+
+        plot_clusters_pca(X_normalized, plot_labels)
+        
+        print(f"HDBSCAN Clustering: {len(clusters)} clusters (including noise)")
+        print(f"Metrics: {metrics}")
+        print(f"Noise Ratio: {noise_ratio}")
+
+        return dict(sorted(clusters.items())), top_words, metrics
+
+    except Exception as e:
+      logging.error(f"HDBSCAN Clustering error: {e}")
+      return {0: papers}, {}, {}
 
 
 def plot_clusters_pca(X, labels, save_path="clusters_pca.png"):

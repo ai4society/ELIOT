@@ -139,17 +139,18 @@ div[data-testid="stExpander"] summary {
     flex-wrap: wrap;
 }
 
-.cluster-paper-count, .cluster-keywords-label {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--uofsc-garnet);
-}
-
 .cluster-keywords {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
+}
+
+.cluster-paper-count,
+.cluster-keywords-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--uofsc-garnet);
 }
 
 .cluster-keyword-badge {
@@ -247,7 +248,22 @@ div[data-testid="stAlertContentError"] * {
     border-color: #333 transparent transparent transparent;
 }
 
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
+/* Radio button labels */
+div[data-testid="stRadio"] label p {
+    font-size: 0.9rem !important;
+}
+
+.clustering-method-header {
+    margin-bottom: 0.15rem !important;
+    font-size: 1.15rem !important;
+}
+
+/* Enable horizontal scrolling for tabs */
+div[data-baseweb="tab-list"] {
+    display: flex !important;
+    gap: 0.8rem;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: thin;
 }

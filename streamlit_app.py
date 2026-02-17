@@ -9,27 +9,7 @@ import plotly.express as px
 import streamlit as st
 
 from arxiv_searcher import ARXIV_CATEGORIES, Paper, search
-from ml_utils import MIN_PAPERS_FOR_CLUSTERING, get_paper_clusters_fuzzy
-
-st.set_page_config(
-    page_title="Paper Explorer", page_icon="📚", layout="centered"
-)
-
-
-def load_css(file_path: str):
-    """Load CSS from external file."""
-    with open(file_path) as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
-
-css_path = Path(__file__).parent / "styles.css"
-load_css(css_path)
-
-# header link
-st.markdown(
-    '<div class="header-bar"><a href="https://ai4society.github.io/" target="_blank" class="header-link">AI4Society</a></div>',
-    unsafe_allow_html=True,
-)
+from ml_utils import MIN_PAPERS_FOR_CLUSTERING, get_paper_clusters_fuzzy, get_paper_clusters_hdbscan
 
 
 def search_papers(
@@ -39,29 +19,29 @@ def search_papers(
     import ast
 
     # Avoid calling arxiv api for repetitive tests
-    df = pd.read_csv(
-        "datasets/papers_20220209-20260209_large_language_models_multi-agent_systems.csv",
-        parse_dates=["published", "updated"]
-    )
-
-    records = df.to_dict("records")
-
-    for r in records:
-        if isinstance(r["authors"], str):
-            r["authors"] = ast.literal_eval(r["authors"])
-
-        if isinstance(r["categories"], str):
-            r["categories"] = ast.literal_eval(r["categories"])
-
-    return [Paper(**r) for r in records]
-
-    # return search(
-    #     keywords=keywords,
-    #     start_date=start_date,
-    #     end_date=end_date,
-    #     sort_by=sort_opt,
-    #     category=category_option,
+    # df = pd.read_csv(
+    #     "datasets/papers_20220209-20260209_large_language_models_multi-agent_systems.csv",
+    #     parse_dates=["published", "updated"]
     # )
+
+    # records = df.to_dict("records")
+
+    # for r in records:
+    #     if isinstance(r["authors"], str):
+    #         r["authors"] = ast.literal_eval(r["authors"])
+
+    #     if isinstance(r["categories"], str):
+    #         r["categories"] = ast.literal_eval(r["categories"])
+
+    # return [Paper(**r) for r in records][0:250]
+
+    return search(
+        keywords=keywords,
+        start_date=start_date,
+        end_date=end_date,
+        sort_by=sort_opt,
+        category=category_option,
+    )
 
 
 def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metrics: dict):
@@ -69,7 +49,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
     years = [p.published.year for p in ordered_papers]
     cluster_nums = [int(label) for label in all_labels]
     K = len(set(all_labels))
-    
+
     # Add jitter to avoid overlapping points since both axes are discrete
     np.random.seed(42)
     jitter_x = np.random.uniform(-0.3, 0.3, size=len(ordered_papers))
@@ -88,6 +68,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         df_viz, 
         x="x", y="y", 
         color="Cluster", 
+        color_discrete_map=color_map,
         hover_data={
             "Title": True, 
             "Date": True,
@@ -126,14 +107,9 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         hovermode="closest"
     )
 
-    # Dynamically compute vertical position of the metrics box
-    # We place metrics below the legend to avoid overlap.
-    padding = 0.09
-    metrics_y = max(0.02, 1 - (K + 1) * 0.055 - padding)
-
     fig.add_annotation(
         x=1.02,
-        y=metrics_y,
+        y=0,
         xref="paper",
         yref="paper",
         xanchor="left",
@@ -149,9 +125,34 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
     )
 
     fig.update_layout(margin=dict(r=160))
+    base_height = 500
+    # Adjust plot height linearly after 10 clusters
+    height = base_height + max(0, K - 10) * 30
+    height = max(500, min(height, 850))
+    return st.plotly_chart(fig, height=height)
 
-    return st.plotly_chart(fig, height=500)
 
+def build_cluster_color_map(cluster_ids: List[str]):
+    palette = px.colors.qualitative.Plotly
+    color_map = {}
+    for i, cid in enumerate(cluster_ids):
+        color_map[f"Cluster {cid}"] = palette[i % len(palette)]
+    return color_map
+
+
+st.set_page_config(
+    page_title="Paper Explorer", page_icon="📚", layout="centered"
+)
+
+css_path = Path(__file__).parent / "styles.css"
+with open(css_path) as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# header link
+st.markdown(
+    '<div class="header-bar"><a href="https://ai4society.github.io/" target="_blank" class="header-link">AI4Society</a></div>',
+    unsafe_allow_html=True,
+)
 
 ORDER_BY_OPTIONS = {
     "Relevance": "relevance",
@@ -235,7 +236,7 @@ if search_button:
             st.session_state["search_results"]["papers"] = papers
 
             if papers:
-                clusters, top_words, metrics = get_paper_clusters_fuzzy(papers)
+                clusters, top_words, metrics = get_paper_clusters_hdbscan(papers)
                 st.session_state["search_results"]["clusters"] = clusters
                 st.session_state["search_results"]["top_words"] = top_words
                 st.session_state["search_results"]["metrics"] = metrics
@@ -261,47 +262,78 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
     clusters = st.session_state["search_results"].get("clusters")
     top_words = st.session_state["search_results"].get("top_words", {})
 
-    col_toggle, col_slider, col_button = st.columns([1.5, 2, 1], vertical_alignment="center")
+    cluster_ids = list(clusters.keys())
+
+    col_toggle = st.columns(1)[0]
     with col_toggle:
         show_clusters = st.toggle("Show Clusters", value=True)
 
-    if show_clusters:  
-        with col_slider:
-            n_clusters = st.slider(
-                "Number of Clusters", 
-                min_value=1, 
-                max_value=10, 
-                value=len(clusters.keys())
-            )
+    if show_clusters:
+        st.markdown('<div class="clustering-method-header">Clustering Method</div>', unsafe_allow_html=True)
         
+        col_radio, col_button = st.columns([0.55, 1.2], vertical_alignment="center")
+        
+        with col_radio:
+            method = st.radio(
+                "Clustering Method",
+                ["Auto-detect clusters", "Specify number of clusters"],
+                label_visibility="collapsed"
+            )
+            
         with col_button:
+            # Add some padding or use custom CSS if needed for perfect alignment, 
+            # but vertical_alignment="center" usually works well.
             cluster_button = st.button("Cluster")
-            if cluster_button:
+
+        if method == "Specify number of clusters":
+            # Use same column ratio to align with radio buttons or slightly wider
+            col_slider, _ = st.columns([0.6, 0.7]) 
+            with col_slider:
+                n_clusters = st.slider(
+                    "Number of Clusters", 
+                    min_value=1, 
+                    max_value=10, 
+                    value=len(cluster_ids) if len(cluster_ids) <= 10 else 5
+                )
+
+        if cluster_button:
+            if method == "Auto-detect clusters":
+                clusters, top_words, metrics = get_paper_clusters_hdbscan(st.session_state['search_results']['papers'])
+            else:
                 clusters, top_words, metrics = get_paper_clusters_fuzzy(st.session_state['search_results']['papers'], n_clusters)
-                st.session_state["search_results"]["clusters"] = clusters
-                st.session_state["search_results"]["top_words"] = top_words
-                st.session_state["search_results"]["metrics"] = metrics
+
+            st.session_state["search_results"]["clusters"] = clusters
+            st.session_state["search_results"]["top_words"] = top_words
+            st.session_state["search_results"]["metrics"] = metrics
  
         if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
-            if top_words:
-                cluster_ids = [k for k in clusters.keys() if top_words.get(k)]
-                for row_start in range(0, len(cluster_ids), 3):
-                    row_ids = cluster_ids[row_start:row_start + 3]
-                    cols = st.columns(3)
-                    for col, cid in zip(cols, row_ids):
-                        with col:
-                            if cid != 0:
-                                badges = ''.join([f"<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>{w}</span>" for w in top_words[cid]])
-                            else:
-                                badges = "<span style='font-size:0.65rem; padding:0.1rem 0.4rem; border-radius: 12px; background-color:rgba(128, 128, 128, 0.2);'>Uncategorized</span>"
+            st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
-                            st.markdown(
-                                f"<div style='display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.3rem;'>"
-                                f"<span style='font-size:0.75rem; font-weight:700; color:var(--uofsc-garnet);'>Cluster {cid}</span>"
-                                f"{badges}"
-                                f"</div>",
-                                unsafe_allow_html=True
-                            )
+            cluster_ids = list(clusters.keys())
+            color_map = build_cluster_color_map(cluster_ids)
+
+            # Show top words above the cluster graph
+            for row_start in range(0, len(cluster_ids), 3):
+                row_ids = cluster_ids[row_start:row_start + 3]
+                cols = st.columns(3)
+                
+                for col, cid in zip(cols, row_ids):
+                    with col:
+                        if cid != 0:
+                            badges = ''.join([f"<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>{w}</span>" for w in top_words[cid]])
+                        else:
+                            badges = "<span style='font-size:0.65rem; padding:0.1rem 0.4rem; border-radius: 12px; background-color:rgba(128, 128, 128, 0.2);'>Uncategorized</span>"
+
+                        cluster_label = f"Cluster {cid}"
+                        cluster_color = color_map.get(cluster_label, "var(--uofsc-garnet)")
+
+                        st.markdown(
+                            f"<div style='display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.3rem;'>"
+                            f"<span style='font-size:0.75rem; font-weight:700; color:{cluster_color};'>Cluster {cid}</span>"
+                            f"{badges}"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
 
             try:
                 # Flatten the clusters to match the dataframe indices
@@ -313,7 +345,6 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                         all_labels.append(str(label))
 
                 metrics = st.session_state["search_results"].get("metrics")
-
                 create_cluster_viz(ordered_papers, all_labels, {
                     "DBI": metrics["DBI"],
                     "CHI": metrics["CHI"],
@@ -326,11 +357,10 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
             st.info("Not enough papers to visualize clusters.")
 
     # Show papers by cluster
-    tabs = st.tabs([f"Cluster {k}" for k in clusters.keys()])
-    for i, tab in enumerate(tabs):
-        with tab:
-            cluster_id = list(clusters.keys())[i]
+    tabs = st.tabs([f"Cluster {cid}" for cid in cluster_ids])
 
+    for tab, cluster_id in zip(tabs, cluster_ids):
+        with tab:
             if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
                 base_html = """
                 <div class='cluster-info'>
