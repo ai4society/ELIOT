@@ -1,18 +1,31 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score, silhouette_score
+from sklearn.metrics import (
+    normalized_mutual_info_score,
+    adjusted_rand_score,
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
 
+# Metrics for no ground truth available
+def calculate_chi(X, y_pred):
+    return calinski_harabasz_score(X, y_pred)
+
+def calculate_dbi(X, y_pred):
+    return davies_bouldin_score(X, y_pred)
+
+def calculate_silhouette(X, y_pred):
+    if len(np.unique(y_pred)) < 2:
+        return -1.0
+    return silhouette_score(X, y_pred, metric='cosine')
+
+# Metrics for ground truth available
 def calculate_nmi(y_true, y_pred):
     return normalized_mutual_info_score(y_true, y_pred)
 
 def calculate_ari(y_true, y_pred):
     return adjusted_rand_score(y_true, y_pred)
-
-def calculate_silhouette(X, y_pred):
-    if len(np.unique(y_pred)) < 2:
-        return -1.0
-    
-    return silhouette_score(X, y_pred, metric='cosine')
 
 def calculate_accuracy(y_true, y_pred):
     """

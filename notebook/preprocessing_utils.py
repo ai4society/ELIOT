@@ -32,7 +32,6 @@ def get_wordnet_pos(treebank_tag: str):
     return wordnet.NOUN
 
 
-# instancie UMA vez (muito mais rápido)
 _LEMMATIZER = WordNetLemmatizer()
 
 def clean_and_lemmatize(text: str, use_pos: bool = True) -> str:
