@@ -1,0 +1,10 @@
+[server]
+
+runOnSave = true
+allowRunOnSave = true
+
+[theme.light]
+primaryColor = "#73000a"
+
+[theme.dark]
+primaryColor = "#73000a"

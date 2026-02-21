@@ -1,6 +1,6 @@
 .venv/
 __pycache__/
 .ruff_cache/
-logs/*
-!logs/.gitkeep
-.python-version
+src/logs/*
+!src/logs/.gitkeep
+.ipynb_checkpoints/

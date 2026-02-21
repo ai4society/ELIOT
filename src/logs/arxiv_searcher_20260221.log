@@ -1,0 +1,668 @@
+2026-02-21 18:28:54,088 - INFO - Querying arXiv for papers.
+2026-02-21 18:28:54,097 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:28:54,097 - INFO - Date Range: 2023-02-21 - 2026-02-21
+2026-02-21 18:28:54,097 - INFO - Query being used: ((cat:q-fin.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202302210000 TO 202602210000])
+
+2026-02-21 18:28:54,098 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:28:54,890 - INFO - Got first page: 100 of 218 total results
+2026-02-21 18:28:54,893 - INFO - Sleeping: 2.940169 seconds
+2026-02-21 18:29:00,769 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:29:01,346 - INFO - Sleeping: 2.947989 seconds
+2026-02-21 18:29:04,294 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 18:29:14,181 - INFO - Querying arXiv for papers.
+2026-02-21 18:29:14,181 - ERROR - An error occurred: Double quotes and parentheses cause problems and are forbidden
+2026-02-21 18:31:14,326 - INFO - Querying arXiv for papers.
+2026-02-21 18:31:14,335 - ERROR - An error occurred: Double quotes and parentheses cause problems and are forbidden
+2026-02-21 18:32:03,618 - INFO - Querying arXiv for papers.
+2026-02-21 18:32:03,628 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:32:03,628 - INFO - Date Range: 2020-02-21 - 2026-02-21
+2026-02-21 18:32:03,628 - INFO - Query being used: ((cat:q-fin.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202002210000 TO 202602210000])
+
+2026-02-21 18:32:03,628 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202002210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:32:06,702 - INFO - Got first page: 100 of 355 total results
+2026-02-21 18:32:06,704 - INFO - Sleeping: 2.948904 seconds
+2026-02-21 18:32:09,653 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202002210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:32:10,310 - INFO - Sleeping: 2.948784 seconds
+2026-02-21 18:32:13,259 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202002210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 18:32:22,708 - INFO - Querying arXiv for papers.
+2026-02-21 18:32:22,709 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:32:22,709 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 18:32:22,709 - INFO - Query being used: ((cat:q-fin.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 18:32:22,710 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:32:24,072 - INFO - Got first page: 100 of 253 total results
+2026-02-21 18:32:24,073 - INFO - Sleeping: 2.969093 seconds
+2026-02-21 18:32:27,042 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:32:32,021 - INFO - Sleeping: 2.952163 seconds
+2026-02-21 18:32:34,974 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 18:34:19,803 - INFO - Querying arXiv for papers.
+2026-02-21 18:34:19,803 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:34:19,803 - INFO - Date Range: 2023-01-01 - 2026-02-21
+2026-02-21 18:34:19,803 - INFO - Query being used: ((cat:q-fin.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202301010000 TO 202602210000])
+
+2026-02-21 18:34:19,804 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202301010000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:34:21,080 - INFO - Got first page: 100 of 227 total results
+2026-02-21 18:34:21,082 - INFO - Sleeping: 2.965283 seconds
+2026-02-21 18:34:24,047 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202301010000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:34:24,807 - INFO - Sleeping: 2.952982 seconds
+2026-02-21 18:34:27,760 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202301010000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 18:40:56,449 - INFO - Querying arXiv for papers.
+2026-02-21 18:40:56,450 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:40:56,450 - INFO - Date Range: 2023-02-21 - 2026-02-21
+2026-02-21 18:40:56,450 - INFO - Query being used: ((cat:cs.* AND all:"portfolio optimization") AND submittedDate:[202302210000 TO 202602210000])
+
+2026-02-21 18:40:56,450 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:40:58,178 - INFO - Got first page: 100 of 153 total results
+2026-02-21 18:40:58,182 - INFO - Sleeping: 2.947418 seconds
+2026-02-21 18:41:01,129 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:41:01,408 - INFO - Querying arXiv for papers.
+2026-02-21 18:41:01,409 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:41:01,410 - INFO - Date Range: 2023-02-21 - 2026-02-21
+2026-02-21 18:41:01,410 - INFO - Query being used: ((cat:q-fin.* AND all:"portfolio optimization") AND submittedDate:[202302210000 TO 202602210000])
+
+2026-02-21 18:41:01,410 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:41:02,996 - INFO - Got first page: 100 of 219 total results
+2026-02-21 18:41:02,998 - INFO - Sleeping: 2.955630 seconds
+2026-02-21 18:41:05,954 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:41:06,742 - INFO - Sleeping: 2.947208 seconds
+2026-02-21 18:41:09,689 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 18:42:05,259 - INFO - Querying arXiv for papers.
+2026-02-21 18:42:05,259 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:42:05,260 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 18:42:05,260 - INFO - Query being used: ((cat:cs.* AND all:"portfolio optimization") AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 18:42:05,261 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:42:05,953 - INFO - Got first page: 81 of 81 total results
+2026-02-21 18:42:16,820 - INFO - Querying arXiv for papers.
+2026-02-21 18:42:16,821 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:42:16,821 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 18:42:16,821 - INFO - Query being used: ((cat:q-fin.* AND all:"portfolio optimization") AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 18:42:16,821 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:42:17,701 - INFO - Got first page: 100 of 103 total results
+2026-02-21 18:42:17,704 - INFO - Sleeping: 2.949993 seconds
+2026-02-21 18:42:20,654 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:42:38,500 - INFO - Querying arXiv for papers.
+2026-02-21 18:42:38,502 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 18:42:38,502 - INFO - Date Range: 2023-01-01 - 2026-02-21
+2026-02-21 18:42:38,502 - INFO - Query being used: ((cat:q-fin.* AND all:"portfolio optimization") AND submittedDate:[202301010000 TO 202602210000])
+
+2026-02-21 18:42:38,502 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202301010000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:42:39,576 - INFO - Got first page: 100 of 228 total results
+2026-02-21 18:42:39,579 - INFO - Sleeping: 2.944439 seconds
+2026-02-21 18:42:42,524 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202301010000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:42:43,382 - INFO - Sleeping: 2.956843 seconds
+2026-02-21 18:42:46,339 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+all%3A%22portfolio+optimization%22%29+AND+submittedDate%3A%5B202301010000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 18:45:44,840 - INFO - Querying arXiv for papers.
+2026-02-21 18:45:44,841 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 18:45:44,841 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 18:45:44,841 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 18:45:44,842 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:45:46,064 - INFO - Got first page: 100 of 612 total results
+2026-02-21 18:45:46,065 - INFO - Sleeping: 2.948629 seconds
+2026-02-21 18:45:49,014 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:45:49,664 - INFO - Sleeping: 2.942695 seconds
+2026-02-21 18:45:51,224 - INFO - Querying arXiv for papers.
+2026-02-21 18:45:51,225 - ERROR - An error occurred: Double quotes and parentheses cause problems and are forbidden
+2026-02-21 18:45:52,607 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 18:45:54,406 - INFO - Querying arXiv for papers.
+2026-02-21 18:45:54,406 - ERROR - An error occurred: Double quotes and parentheses cause problems and are forbidden
+2026-02-21 18:46:24,165 - INFO - Querying arXiv for papers.
+2026-02-21 18:47:16,694 - INFO - Querying arXiv for papers.
+2026-02-21 18:48:41,044 - INFO - Querying arXiv for papers.
+2026-02-21 18:49:15,116 - INFO - Querying arXiv for papers.
+2026-02-21 18:49:15,116 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:50:00,266 - INFO - Querying arXiv for papers.
+2026-02-21 18:50:00,266 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:50:32,447 - INFO - Querying arXiv for papers.
+2026-02-21 18:50:32,449 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:51:16,689 - INFO - Querying arXiv for papers.
+2026-02-21 18:51:16,690 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:51:16,691 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:51:41,105 - INFO - Querying arXiv for papers.
+2026-02-21 18:51:41,106 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:51:41,106 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:52:02,807 - INFO - Querying arXiv for papers.
+2026-02-21 18:52:02,808 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:52:02,809 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:52:12,298 - INFO - Querying arXiv for papers.
+2026-02-21 18:52:12,299 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:52:12,299 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:54:27,585 - INFO - Querying arXiv for papers.
+2026-02-21 18:54:27,586 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:54:53,631 - INFO - Querying arXiv for papers.
+2026-02-21 18:54:53,632 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:55:12,074 - INFO - Querying arXiv for papers.
+2026-02-21 18:55:12,076 - ERROR - An error occurred: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 18:55:19,008 - INFO - Querying arXiv for papers.
+2026-02-21 18:55:19,008 - INFO - Keywords for filtering: ['language models']
+2026-02-21 18:55:19,008 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 18:55:19,008 - INFO - Query being used: ((cat:cs.* AND (ti:"language models" OR abs:"language models")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 18:55:19,009 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22language+models%22+OR+abs%3A%22language+models%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 18:55:24,229 - INFO - Got first page: 100 of 38222 total results
+2026-02-21 18:55:24,230 - INFO - Sleeping: 2.965822 seconds
+2026-02-21 18:55:27,196 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22language+models%22+OR+abs%3A%22language+models%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 18:55:29,433 - INFO - Sleeping: 2.951470 seconds
+2026-02-21 18:55:32,385 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22language+models%22+OR+abs%3A%22language+models%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:01:50,939 - INFO - Querying arXiv for papers.
+2026-02-21 19:01:50,939 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 19:01:50,939 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:01:50,939 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:01:50,940 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:01:51,133 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:01:51,135 - INFO - Sleeping: 2.947626 seconds
+2026-02-21 19:01:54,082 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:01:54,173 - INFO - Sleeping: 2.940162 seconds
+2026-02-21 19:01:57,114 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:02:11,017 - INFO - Querying arXiv for papers.
+2026-02-21 19:02:11,018 - ERROR - Input error: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 19:02:20,063 - INFO - Querying arXiv for papers.
+2026-02-21 19:02:20,064 - ERROR - Input error: Keyword with double quotes or parentheses are not allowed.
+2026-02-21 19:02:32,148 - INFO - Querying arXiv for papers.
+2026-02-21 19:02:32,148 - INFO - Keywords for filtering: ['language models']
+2026-02-21 19:02:32,148 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:02:32,149 - INFO - Query being used: ((cat:cs.* AND (ti:"language models" OR abs:"language models")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:02:32,149 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22language+models%22+OR+abs%3A%22language+models%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:02:32,433 - INFO - Got first page: 100 of 38222 total results
+2026-02-21 19:02:32,435 - INFO - Sleeping: 2.952519 seconds
+2026-02-21 19:02:35,388 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22language+models%22+OR+abs%3A%22language+models%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:02:35,476 - INFO - Sleeping: 2.956727 seconds
+2026-02-21 19:02:38,433 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22language+models%22+OR+abs%3A%22language+models%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:16:35,111 - INFO - Querying arXiv for papers.
+2026-02-21 19:16:35,113 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 19:16:35,113 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:16:35,113 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:16:35,113 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:16:35,326 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:16:35,329 - INFO - Sleeping: 2.940972 seconds
+2026-02-21 19:16:38,270 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:16:38,364 - INFO - Sleeping: 2.939812 seconds
+2026-02-21 19:16:44,887 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:17:35,480 - INFO - Querying arXiv for papers.
+2026-02-21 19:17:35,481 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 19:17:35,481 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:17:35,481 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:17:35,481 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:17:35,621 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:17:35,623 - INFO - Sleeping: 2.961486 seconds
+2026-02-21 19:17:38,584 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:17:38,671 - INFO - Sleeping: 2.943342 seconds
+2026-02-21 19:17:41,614 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:18:50,163 - INFO - Querying arXiv for papers.
+2026-02-21 19:18:50,164 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 19:18:50,164 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:18:50,164 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:18:50,165 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:18:50,315 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:18:50,317 - INFO - Sleeping: 2.958405 seconds
+2026-02-21 19:18:53,275 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:18:53,368 - INFO - Sleeping: 2.940778 seconds
+2026-02-21 19:18:56,309 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:26:25,216 - INFO - Querying arXiv for papers.
+2026-02-21 19:26:25,217 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 19:26:25,217 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:26:25,217 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:26:25,217 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:26:25,464 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:26:25,466 - INFO - Sleeping: 2.945597 seconds
+2026-02-21 19:26:28,412 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:26:28,507 - INFO - Sleeping: 2.936760 seconds
+2026-02-21 19:26:31,444 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:27:18,341 - INFO - Querying arXiv for papers.
+2026-02-21 19:27:18,342 - INFO - Keywords for filtering: ['Protein folding']
+2026-02-21 19:27:18,342 - INFO - Date Range: 2023-02-21 - 2026-02-21
+2026-02-21 19:27:18,343 - INFO - Query being used: ((cat:cs.* AND (ti:"Protein folding" OR abs:"Protein folding")) AND submittedDate:[202302210000 TO 202602210000])
+
+2026-02-21 19:27:18,344 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22Protein+folding%22+OR+abs%3A%22Protein+folding%22%29%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:27:19,050 - INFO - Got first page: 79 of 79 total results
+2026-02-21 19:29:39,677 - INFO - Querying arXiv for papers.
+2026-02-21 19:29:39,677 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:29:39,678 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:29:39,678 - INFO - Query being used: ((cat:cs.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:29:39,678 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:29:40,553 - INFO - Got first page: 100 of 177 total results
+2026-02-21 19:29:40,555 - INFO - Sleeping: 2.945491 seconds
+2026-02-21 19:29:42,758 - INFO - Querying arXiv for papers.
+2026-02-21 19:29:42,758 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:29:42,759 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:29:42,759 - INFO - Query being used: ((cat:q-fin.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:29:42,759 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:29:43,026 - INFO - Got first page: 100 of 253 total results
+2026-02-21 19:29:43,028 - INFO - Sleeping: 2.951735 seconds
+2026-02-21 19:29:43,501 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:29:45,980 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:29:46,057 - INFO - Sleeping: 2.951118 seconds
+2026-02-21 19:29:49,008 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:29:49,065 - ERROR - Unexpected error: Cannot save file into a non-existent directory: 'datasets'
+2026-02-21 19:30:00,829 - INFO - Querying arXiv for papers.
+2026-02-21 19:30:00,829 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:30:00,829 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:30:00,829 - INFO - Query being used: ((cat:q-fin.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:30:00,829 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:30:04,040 - INFO - Got first page: 100 of 253 total results
+2026-02-21 19:30:04,044 - INFO - Sleeping: 2.949759 seconds
+2026-02-21 19:30:06,995 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:30:07,134 - INFO - Sleeping: 2.951977 seconds
+2026-02-21 19:30:10,086 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:30:10,144 - ERROR - Unexpected error: Cannot save file into a non-existent directory: 'datasets'
+2026-02-21 19:30:14,201 - INFO - Querying arXiv for papers.
+2026-02-21 19:30:14,202 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:30:14,202 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:30:14,202 - INFO - Query being used: ((cat:q-fin.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:30:14,202 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:30:14,462 - INFO - Got first page: 100 of 253 total results
+2026-02-21 19:30:14,464 - INFO - Sleeping: 2.931835 seconds
+2026-02-21 19:30:17,396 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:30:17,489 - INFO - Sleeping: 2.944216 seconds
+2026-02-21 19:30:20,433 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:30:20,493 - ERROR - Unexpected error: Cannot save file into a non-existent directory: 'datasets'
+2026-02-21 19:44:02,534 - INFO - Querying arXiv for papers.
+2026-02-21 19:44:02,535 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 19:44:02,535 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:44:02,535 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:44:02,535 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:44:02,748 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:44:02,751 - INFO - Sleeping: 2.940144 seconds
+2026-02-21 19:44:05,691 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:44:05,777 - INFO - Sleeping: 2.939885 seconds
+2026-02-21 19:44:08,717 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:44:08,808 - ERROR - Unexpected error: Cannot save file into a non-existent directory: 'datasets'
+2026-02-21 19:44:38,712 - INFO - Querying arXiv for papers.
+2026-02-21 19:44:38,713 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 19:44:38,713 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:44:38,713 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:44:38,713 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:44:38,856 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:44:38,857 - INFO - Sleeping: 2.971926 seconds
+2026-02-21 19:44:41,829 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:44:41,914 - INFO - Sleeping: 2.942724 seconds
+2026-02-21 19:44:44,857 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:45:24,696 - INFO - Querying arXiv for papers.
+2026-02-21 19:45:24,697 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 19:45:24,698 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:45:24,698 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:45:24,698 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:45:24,853 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:45:24,856 - INFO - Sleeping: 2.949410 seconds
+2026-02-21 19:45:27,805 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:45:27,892 - INFO - Sleeping: 2.940239 seconds
+2026-02-21 19:45:30,833 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:45:30,950 - INFO - Sleeping: 2.915598 seconds
+2026-02-21 19:45:33,865 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:45:33,954 - INFO - Got first page: 100 of 612 total results
+2026-02-21 19:45:33,956 - INFO - Sleeping: 2.937897 seconds
+2026-02-21 19:45:36,895 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:45:36,984 - INFO - Sleeping: 2.938236 seconds
+2026-02-21 19:45:39,922 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:45:52,828 - INFO - Querying arXiv for papers.
+2026-02-21 19:45:52,828 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:45:52,829 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:45:52,829 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:45:52,829 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:45:53,213 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:45:53,218 - INFO - Sleeping: 2.983791 seconds
+2026-02-21 19:45:56,202 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:45:56,260 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:45:56,296 - ERROR - HDBSCAN Clustering error: need at least one array to concatenate
+2026-02-21 19:45:56,299 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:46:23,272 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:46:24,574 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:46:36,293 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:47:25,708 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:47:30,021 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:47:36,630 - INFO - Querying arXiv for papers.
+2026-02-21 19:47:36,631 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:47:36,631 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:47:36,631 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:47:36,631 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:47:36,738 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:47:36,741 - INFO - Sleeping: 2.982710 seconds
+2026-02-21 19:47:39,724 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:47:39,767 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:47:39,806 - ERROR - HDBSCAN Clustering error: need at least one array to concatenate
+2026-02-21 19:47:39,814 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:48:14,594 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:48:16,664 - INFO - Querying arXiv for papers.
+2026-02-21 19:48:16,664 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:48:16,665 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:48:16,665 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:48:16,665 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:48:16,764 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:48:16,767 - INFO - Sleeping: 2.985601 seconds
+2026-02-21 19:48:19,753 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:48:19,792 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:48:19,803 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:48:46,691 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:49:11,178 - INFO - Querying arXiv for papers.
+2026-02-21 19:49:11,178 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:49:11,178 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:49:11,179 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:49:11,179 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:49:11,316 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:49:11,322 - INFO - Sleeping: 2.981594 seconds
+2026-02-21 19:49:14,304 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:49:14,346 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:49:16,211 - ERROR - HDBSCAN Clustering error: need at least one array to concatenate
+2026-02-21 19:49:16,214 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:49:27,678 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:49:30,624 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:49:36,424 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:49:54,451 - INFO - Querying arXiv for papers.
+2026-02-21 19:49:54,452 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:49:54,452 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:49:54,452 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:49:54,453 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:49:54,581 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:49:54,586 - INFO - Sleeping: 2.981512 seconds
+2026-02-21 19:49:57,568 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:49:57,642 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:49:57,679 - ERROR - HDBSCAN Clustering error: need at least one array to concatenate
+2026-02-21 19:49:57,682 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:49:59,980 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:50:29,417 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:50:32,897 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:50:34,735 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:51:10,602 - ERROR - Visualization failed: 'DBI'
+2026-02-21 19:51:25,085 - INFO - Querying arXiv for papers.
+2026-02-21 19:51:25,086 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:51:25,086 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:51:25,087 - INFO - Query being used: ((cat:cs.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:51:25,088 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:51:25,797 - INFO - Got first page: 81 of 81 total results
+2026-02-21 19:51:25,804 - INFO - Sleeping: 2.953279 seconds
+2026-02-21 19:51:28,758 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:51:28,830 - INFO - Got first page: 81 of 81 total results
+2026-02-21 19:51:46,695 - INFO - Querying arXiv for papers.
+2026-02-21 19:51:46,696 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:51:46,696 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:51:46,696 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:51:46,697 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:51:47,039 - INFO - Got first page: 10 of 10 total results
+2026-02-21 19:51:47,043 - INFO - Sleeping: 2.988680 seconds
+2026-02-21 19:51:50,033 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:51:50,067 - INFO - Got first page: 10 of 10 total results
+2026-02-21 19:53:20,268 - INFO - Querying arXiv for papers.
+2026-02-21 19:53:20,269 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:53:20,270 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:53:20,270 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:53:20,270 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:53:20,348 - INFO - Got first page: 10 of 10 total results
+2026-02-21 19:53:20,351 - INFO - Sleeping: 2.991405 seconds
+2026-02-21 19:53:23,343 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:53:23,378 - INFO - Got first page: 10 of 10 total results
+2026-02-21 19:54:27,327 - INFO - Querying arXiv for papers.
+2026-02-21 19:54:27,327 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:54:27,327 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:54:27,327 - INFO - Query being used: ((cat:q-fin.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:54:27,328 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:54:30,200 - INFO - Got first page: 100 of 253 total results
+2026-02-21 19:54:30,202 - INFO - Sleeping: 2.966453 seconds
+2026-02-21 19:54:30,765 - INFO - Querying arXiv for papers.
+2026-02-21 19:54:30,765 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:54:30,765 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:54:30,765 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:54:30,765 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:54:30,860 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:54:30,863 - INFO - Sleeping: 2.985686 seconds
+2026-02-21 19:54:33,168 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:54:33,850 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:54:33,896 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:54:33,992 - INFO - Sleeping: 2.942146 seconds
+2026-02-21 19:54:36,935 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:54:37,754 - INFO - Sleeping: 2.957551 seconds
+2026-02-21 19:54:40,712 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:54:40,784 - INFO - Got first page: 100 of 253 total results
+2026-02-21 19:54:40,786 - INFO - Sleeping: 2.953421 seconds
+2026-02-21 19:54:43,739 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 19:54:43,826 - INFO - Sleeping: 2.946446 seconds
+2026-02-21 19:54:46,772 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aq-fin.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 19:55:17,846 - INFO - Querying arXiv for papers.
+2026-02-21 19:55:17,846 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:55:17,847 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:55:17,847 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:55:17,847 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:55:18,074 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:55:18,078 - INFO - Sleeping: 2.981972 seconds
+2026-02-21 19:55:21,061 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:55:21,096 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:56:05,636 - INFO - Querying arXiv for papers.
+2026-02-21 19:56:05,636 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:56:05,636 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:56:05,636 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:56:05,638 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:56:05,731 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:56:05,735 - INFO - Sleeping: 2.984155 seconds
+2026-02-21 19:56:12,298 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:56:12,341 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:56:21,265 - INFO - Querying arXiv for papers.
+2026-02-21 19:56:21,266 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:56:21,266 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:56:21,266 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:56:21,266 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:56:21,372 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:56:21,376 - INFO - Sleeping: 2.982751 seconds
+2026-02-21 19:56:24,359 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:56:24,404 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:56:40,735 - INFO - Querying arXiv for papers.
+2026-02-21 19:56:40,736 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:56:40,737 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 19:56:40,737 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 19:56:40,737 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:56:40,861 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:56:40,866 - INFO - Sleeping: 2.984440 seconds
+2026-02-21 19:56:47,437 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:56:47,483 - INFO - Got first page: 24 of 24 total results
+2026-02-21 19:57:33,183 - INFO - Querying arXiv for papers.
+2026-02-21 19:57:33,184 - INFO - Keywords for filtering: ['portfolio optimization']
+2026-02-21 19:57:33,185 - INFO - Date Range: 2023-02-21 - 2026-02-21
+2026-02-21 19:57:33,185 - INFO - Query being used: ((cat:econ.* AND (ti:"portfolio optimization" OR abs:"portfolio optimization")) AND submittedDate:[202302210000 TO 202602210000])
+
+2026-02-21 19:57:33,185 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:57:33,532 - INFO - Got first page: 21 of 21 total results
+2026-02-21 19:57:33,536 - INFO - Sleeping: 2.983708 seconds
+2026-02-21 19:57:36,520 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22portfolio+optimization%22+OR+abs%3A%22portfolio+optimization%22%29%29+AND+submittedDate%3A%5B202302210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:57:36,556 - INFO - Got first page: 21 of 21 total results
+2026-02-21 19:58:36,360 - INFO - Querying arXiv for papers.
+2026-02-21 19:58:36,362 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 19:58:36,362 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:58:36,362 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:58:36,362 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:58:36,693 - INFO - Got first page: 10 of 10 total results
+2026-02-21 19:58:36,698 - INFO - Sleeping: 2.986021 seconds
+2026-02-21 19:58:39,685 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:58:39,716 - INFO - Got first page: 10 of 10 total results
+2026-02-21 19:59:21,563 - INFO - Querying arXiv for papers.
+2026-02-21 19:59:21,564 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 19:59:21,564 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:59:21,564 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:59:21,564 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:59:21,650 - INFO - Got first page: 10 of 10 total results
+2026-02-21 19:59:30,929 - INFO - Querying arXiv for papers.
+2026-02-21 19:59:30,930 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 19:59:30,930 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:59:30,930 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:59:30,930 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:59:31,003 - INFO - Got first page: 10 of 10 total results
+2026-02-21 19:59:36,518 - INFO - Querying arXiv for papers.
+2026-02-21 19:59:36,518 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 19:59:36,519 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 19:59:36,519 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 19:59:36,519 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 19:59:36,590 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:00:30,856 - INFO - Querying arXiv for papers.
+2026-02-21 20:00:30,856 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:00:30,856 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:00:30,856 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:00:30,857 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:00:30,936 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:01:00,930 - INFO - Querying arXiv for papers.
+2026-02-21 20:01:00,931 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:01:00,931 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:01:00,931 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:01:00,932 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:01:01,024 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:01:49,079 - INFO - Querying arXiv for papers.
+2026-02-21 20:01:49,079 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:01:49,079 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:01:49,079 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:01:49,080 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:01:49,164 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:01:57,291 - INFO - Querying arXiv for papers.
+2026-02-21 20:01:57,292 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:01:57,292 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:01:57,292 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:01:57,294 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:01:57,374 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:02:03,962 - INFO - Querying arXiv for papers.
+2026-02-21 20:02:03,962 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:02:03,962 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:02:03,962 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:02:03,963 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:02:04,039 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:02:25,446 - INFO - Querying arXiv for papers.
+2026-02-21 20:02:25,447 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:02:25,447 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:02:25,447 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:02:25,447 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:02:25,526 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:02:55,257 - INFO - Querying arXiv for papers.
+2026-02-21 20:02:55,258 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:02:55,258 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:02:55,258 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:02:55,258 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:02:55,340 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:03:57,453 - INFO - Querying arXiv for papers.
+2026-02-21 20:03:57,453 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:03:57,453 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:03:57,453 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:03:57,453 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:03:57,537 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:04:35,970 - INFO - Querying arXiv for papers.
+2026-02-21 20:04:35,971 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:04:35,971 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:04:35,971 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:04:35,971 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:04:36,085 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:04:43,176 - INFO - Querying arXiv for papers.
+2026-02-21 20:04:43,177 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:04:43,178 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:04:43,179 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:04:43,179 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:04:43,283 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:04:44,719 - INFO - Querying arXiv for papers.
+2026-02-21 20:04:44,720 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:04:44,720 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:04:44,720 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:04:44,722 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:04:44,910 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:08:25,007 - INFO - Querying arXiv for papers.
+2026-02-21 20:08:25,007 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:08:25,007 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:08:25,007 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:08:25,008 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:08:25,126 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:08:25,132 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:08:45,249 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:09:02,521 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:09:06,188 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:09:07,648 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:09:29,277 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:09:30,931 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:09:35,740 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:10:51,106 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:11:20,599 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:11:21,624 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:11:24,260 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:11:29,424 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:13:33,968 - INFO - Querying arXiv for papers.
+2026-02-21 20:13:33,969 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:13:33,969 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:13:33,969 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:13:33,969 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:13:34,066 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:13:34,075 - ERROR - Visualization failed: 'DBI'
+2026-02-21 20:14:51,152 - INFO - Querying arXiv for papers.
+2026-02-21 20:14:51,153 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:14:51,153 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:14:51,153 - INFO - Query being used: ((cat:econ.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:14:51,154 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Aecon.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:14:51,352 - INFO - Got first page: 10 of 10 total results
+2026-02-21 20:18:19,869 - INFO - Querying arXiv for papers.
+2026-02-21 20:18:19,870 - INFO - Keywords for filtering: ['Portfolio Optimization']
+2026-02-21 20:18:19,870 - INFO - Date Range: 2022-02-21 - 2026-02-21
+2026-02-21 20:18:19,870 - INFO - Query being used: ((cat:cs.* AND (ti:"Portfolio Optimization" OR abs:"Portfolio Optimization")) AND submittedDate:[202202210000 TO 202602210000])
+
+2026-02-21 20:18:19,871 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:18:20,526 - INFO - Got first page: 100 of 177 total results
+2026-02-21 20:18:20,528 - INFO - Sleeping: 2.946433 seconds
+2026-02-21 20:18:23,475 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 20:18:23,986 - INFO - Sleeping: 2.950805 seconds
+2026-02-21 20:18:26,937 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:18:27,019 - INFO - Got first page: 100 of 177 total results
+2026-02-21 20:18:27,021 - INFO - Sleeping: 2.946231 seconds
+2026-02-21 20:18:29,967 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28ti%3A%22Portfolio+Optimization%22+OR+abs%3A%22Portfolio+Optimization%22%29%29+AND+submittedDate%3A%5B202202210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 20:19:03,431 - INFO - Querying arXiv for papers.
+2026-02-21 20:19:03,432 - INFO - Keywords for filtering: ['large language models', 'multi-agent systems']
+2026-02-21 20:19:03,432 - INFO - Date Range: 2025-02-21 - 2026-02-21
+2026-02-21 20:19:03,432 - INFO - Query being used: ((cat:cs.* AND ((ti:"large language models" OR abs:"large language models") AND (ti:"multi-agent systems" OR abs:"multi-agent systems"))) AND submittedDate:[202502210000 TO 202602210000])
+
+2026-02-21 20:19:03,433 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:19:04,267 - INFO - Got first page: 100 of 612 total results
+2026-02-21 20:19:04,268 - INFO - Sleeping: 2.963914 seconds
+2026-02-21 20:19:07,232 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 20:19:07,790 - INFO - Sleeping: 2.945616 seconds
+2026-02-21 20:19:10,736 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
+2026-02-21 20:19:11,274 - INFO - Sleeping: 2.935643 seconds
+2026-02-21 20:19:14,210 - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-21 20:19:14,290 - INFO - Got first page: 100 of 612 total results
+2026-02-21 20:19:14,293 - INFO - Sleeping: 2.941941 seconds
+2026-02-21 20:19:17,235 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=100&max_results=100
+2026-02-21 20:19:17,324 - INFO - Sleeping: 2.938047 seconds
+2026-02-21 20:19:20,262 - INFO - Requesting page (first: False, try: 0): https://export.arxiv.org/api/query?search_query=%28%28cat%3Acs.%2A+AND+%28%28ti%3A%22large+language+models%22+OR+abs%3A%22large+language+models%22%29+AND+%28ti%3A%22multi-agent+systems%22+OR+abs%3A%22multi-agent+systems%22%29%29%29+AND+submittedDate%3A%5B202502210000+TO+202602210000%5D%29&id_list=&sortBy=relevance&sortOrder=descending&start=200&max_results=100
