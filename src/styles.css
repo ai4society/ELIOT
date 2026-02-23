@@ -3,6 +3,17 @@
     --uofsc-black: #000000;
 }
 
+/* Forces all Streamlit widget labels (text_input, selectbox, date_input,
+   toggle, radio, etc.) to use a consistent 1rem font size. */
+div[data-testid^="st"] label p {
+    font-size: 1rem !important;
+}
+
+/* Make only the radio widget title bold (e.g., "Clustering Method") */
+div[data-testid="stRadio"] > label p {
+    font-weight: 700 !important;
+}
+
 .header-bar {
     position: fixed;
     top: 0 !important;
@@ -202,12 +213,6 @@ div[data-testid="stHorizontalBlock"] {
     margin: 0 auto;
 }
 
-/* Errors/Tracebacks */
-div[data-testid="stAlertContentError"],
-div[data-testid="stAlertContentError"] * {
-    color: #000000;
-}
-
 /* Tooltip styles */
 .tooltip {
     position: relative;
@@ -246,16 +251,6 @@ div[data-testid="stAlertContentError"] * {
     border-width: 5px;
     border-style: solid;
     border-color: #333 transparent transparent transparent;
-}
-
-/* Radio button labels */
-div[data-testid="stRadio"] label p {
-    font-size: 0.9rem !important;
-}
-
-.clustering-method-header {
-    margin-bottom: 0.15rem !important;
-    font-size: 1.15rem !important;
 }
 
 /* Enable horizontal scrolling for tabs */

@@ -27,7 +27,7 @@ def search_papers(
 
     # Avoid calling arxiv api for repetitive tests
     # df = pd.read_csv(
-    #     "datasets/papers_20220209-20260209_large_language_models_multi-agent_systems.csv",
+    #     "../evaluation/datasets/new/papers_20230218-20260218_trustworthy_AI.csv",
     #     parse_dates=["published", "updated"]
     # )
 
@@ -228,7 +228,7 @@ with col_search_bt:
 if search_button:
     st.session_state["search_results"]["searched"] = False
     with st.spinner("🔎 Searching papers..."):
-        #try:
+        try:
             if not keywords:
                 keywords = DEFAULT_KEYWORDS
 
@@ -249,15 +249,15 @@ if search_button:
                 st.session_state["search_results"]["metrics"] = metrics
 
             st.session_state["search_results"]["searched"] = True
-        # except (InvalidKeywordError, InvalidDateRangeError, TooManyKeywordsError) as e:
-        #     st.error(f"⚠️ {str(e)}")
-        #     logging.error(f"Input error: {str(e)}")
-        # except ArxivFetchingError as e:
-        #     st.warning("We couldn't fetch papers right now. Please try again in a few minutes.")
-        #     logging.error(f"Fetching error: {str(e)}")
-        # except Exception as e:
-        #     st.error("⚠️ An unexpected error occurred")
-        #     logging.error(f"Unexpected error: {str(e)}")
+        except (InvalidKeywordError, InvalidDateRangeError, TooManyKeywordsError) as e:
+            st.error(f"⚠️ {str(e)}")
+            logging.error(f"Input error: {str(e)}")
+        except ArxivFetchingError as e:
+            st.warning("We couldn't fetch papers right now. Please try again in a few minutes.")
+            logging.error(f"Fetching error: {str(e)}")
+        except Exception as e:
+            st.error("⚠️ An unexpected error occurred")
+            logging.error(f"Unexpected error: {str(e)}")
 
 if st.session_state["search_results"]["searched"] and st.session_state["search_results"]["papers"]:
     col_results = st.columns(1)[0]
@@ -279,24 +279,22 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
         show_clusters = st.toggle("Show Clusters", value=True)
 
     if show_clusters:
-        st.markdown('<div class="clustering-method-header">Clustering Method</div>', unsafe_allow_html=True)
-        
         col_radio, col_button = st.columns([0.55, 1.2], vertical_alignment="center")
-        
+
         with col_radio:
             method = st.radio(
                 "Clustering Method",
                 ["Auto-detect clusters", "Specify number of clusters"],
-                label_visibility="collapsed"
+                label_visibility="visible",
+                help=("Controls how papers are grouped. Auto-detect automatically discovers "
+                      "topic groups from the data. Specify number allows you to manually set "
+                      "how many clusters will be created.")
             )
-            
+
         with col_button:
-            # Add some padding or use custom CSS if needed for perfect alignment, 
-            # but vertical_alignment="center" usually works well.
             cluster_button = st.button("Cluster")
 
         if method == "Specify number of clusters":
-            # Use same column ratio to align with radio buttons or slightly wider
             col_slider, _ = st.columns([0.6, 0.7]) 
             with col_slider:
                 n_clusters = st.slider(
