@@ -1,110 +1,96 @@
-from typing import List, Dict
+import re
+from typing import Dict, List
+
+import nltk
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction import text
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import normalize
+
 from arxiv_searcher import Paper
-import re
-import nltk
-from nltk.stem import WordNetLemmatizer
 
 
-# Setup NLTK (Download wordnet if not present)
-try:
-    nltk.data.find('corpora/wordnet.zip')
-except LookupError:
-    nltk.download('wordnet')
+_LEMMATIZER = WordNetLemmatizer()
+VECTORIZER = TfidfVectorizer(min_df=3, max_df=0.7, max_features=3000, ngram_range=(1, 3))
+SVD = TruncatedSVD(n_components=5, random_state=42)
 
-lemmatizer = WordNetLemmatizer()
+resources = [
+    ("corpora/wordnet", "wordnet"),
+    ("corpora/omw-1.4", "omw-1.4"),
+    ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng"),
+    ("tokenizers/punkt", "punkt"),
+]
+for path, pkg in resources:
+    try:
+        nltk.data.find(path)
+    except LookupError:
+        nltk.download(pkg)
 
-vectorizer = TfidfVectorizer(
-    stop_words='english', 
-    max_features=1000, 
-    max_df=0.65,
-    min_df=3,
-    ngram_range=(1, 2),
-    strip_accents='unicode'
-)
+
+def get_wordnet_pos(treebank_tag: str):
+    if treebank_tag.startswith("J"):
+        return wordnet.ADJ
+    if treebank_tag.startswith("V"):
+        return wordnet.VERB
+    if treebank_tag.startswith("N"):
+        return wordnet.NOUN
+    if treebank_tag.startswith("R"):
+        return wordnet.ADV
+    return wordnet.NOUN
 
 
-def clean_text(text: str) -> str:
+def clean_and_lemmatize(text: str) -> str:
     """
-    Applies basic essential text cleaning AND lemmatization:
-        1. Lowercase
-        2. Remove single characters (noise)
-        3. Lemmatize (convert words to their base form)
-        
+    Cleans and lemmatizes the text.
+
     Args:
-        text: Raw input text
-
-    Returns:
-        Cleaned and lemmatized text string
+        text: text to clean and lemmatize
     """
-    # Lowercase first for better lemmatization matches
+
     text = text.lower()
-    
-    # Remove HTML tags if any
-    text = re.sub(r'<.*?>', '', text)
-    # Remove single characters (e.g. " a ", " b ")
-    text = re.sub(r'\b[a-z]\b', '', text)
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
 
-    # Lemmatize tokens
-    tokens = text.split()
-    # Lemmatize twice: once for verbs (running->run) and once for nouns (cars->car)
-    tokens = [lemmatizer.lemmatize(lemmatizer.lemmatize(word, pos='v'), pos='n') for word in tokens]
-    
-    return ' '.join(tokens)
+    tokens = nltk.word_tokenize(text)
+
+    tagged = nltk.pos_tag(tokens)
+    lemmas = [_LEMMATIZER.lemmatize(w, pos=get_wordnet_pos(tag)) for w, tag in tagged]
+    return " ".join(lemmas)
 
 
-def preprocess_and_vectorize(papers: List[Paper], n_components: int = 100):
+def preprocess_texts(papers: List[Paper]):
     """
-    Converts paper texts into normalized semantic vectors using TF-IDF and SVD.
-    
-     Args:
-        papers: List of Paper objects containing title and abstract
-        n_components: Number of latent semantic dimensions
-    
-    Returns:
-        X_normalized: Reduced and normalized document embeddings
-        svd: Fitted TruncatedSVD model
-        vectorizer: Fitted TF-IDF vectorizer
+    Receives texts and returns preprocessed texts (strings)
     """
-    if not papers:
-        return None, None, None
-
-    documents = [clean_text(f"{p.title} {p.abstract}") for p in papers]
+    clean_text = [clean_and_lemmatize(doc) for doc in [p.title + " " + p.abstract for p in papers]]
     
-    X_tfidf = vectorizer.fit_transform(documents)
+    X = VECTORIZER.fit_transform(clean_text)
+    X = SVD.fit_transform(X)
+    X = normalize(X, norm="l2")
+    print(f"SVD explained variance: {SVD.explained_variance_ratio_.sum():.2%}")
 
-    # SVD for dimensionality reduction
-    svd = TruncatedSVD(n_components=n_components, random_state=42)
-    X_reduced = svd.fit_transform(X_tfidf)
-    
-    # Normalize for cosine distance
-    X_normalized = normalize(X_reduced, norm="l2")
-
-    return X_normalized, svd, vectorizer
+    return X
 
 
-def get_top_k_words_from_svd_centroids(cntr_svd, svd, vectorizer, top_k=3):
+def get_top_k_words_from_svd_centroids(cntr_svd, top_k=3):
     """
     Extracts the main words from each centroid in SVD space.
     
     Args:
         cntr_svd: Centroids in reduced SVD space (n_clusters, n_components)
-        svd: TruncatedSVD fitted
-        vectorizer: TfidfVectorizer fitted
         top_k: Number of words by cluster
     
     Returns:
         Dictionary {cluster_id: [top_k_words]}
     """
-    terms = vectorizer.get_feature_names_out()
+    terms = VECTORIZER.get_feature_names_out()
     top_words = {}
 
     for i in range(cntr_svd.shape[0]):
         # Reconstructs the weights in the original TF-IDF space
-        tfidf_weights = svd.inverse_transform(cntr_svd[i].reshape(1, -1)).ravel()
+        tfidf_weights = SVD.inverse_transform(cntr_svd[i].reshape(1, -1)).ravel()
 
         # Get the top_k * 3 candidates to filter out redundancies.
         # Example:
@@ -131,49 +117,4 @@ def get_top_k_words_from_svd_centroids(cntr_svd, svd, vectorizer, top_k=3):
         
         top_words[i] = final_words
 
-    return top_words
-
-
-def get_top_k_words(centroids, top_k=3):
-    """
-    Returns the top k words for each cluster based on centroid values.
-    
-    Args:
-        centroids: Cluster centroids from KMeans (shape: n_clusters x n_features)
-        top_k: Number of top words to extract per cluster
-    
-    Returns:
-        Dictionary mapping cluster_id -> list of top k words
-    """
-    top_words = {}
-    terms = vectorizer.get_feature_names_out()
-    
-    for i in range(len(centroids)):
-        # Get indices of top features with highest values
-        # We fetch more candidates initially to allow for filtering redundancy
-        candidate_indices = centroids[i].argsort()[-(top_k * 3):][::-1]
-        candidates = [terms[idx] for idx in candidate_indices]
-        
-        # Filter out substrings (e.g., remove "agent" if "multi agent" is present)
-        final_words = []
-        for word in candidates:
-            # Keep a word only if it is NOT a substring of another candidate 
-            # We use regex \b to ensure we match whole words (e.g. avoid matching "ear" in "learning")
-
-            is_substring = False
-            for other_word in candidates:
-                if word != other_word:
-                    # Check if 'word' is a whole-word substring of 'other_word'
-                    if re.search(r'\b' + re.escape(word) + r'\b', other_word):
-                        is_substring = True
-                        break
-            
-            if not is_substring:
-                final_words.append(word)
-                
-            if len(final_words) >= top_k:
-                break
-                
-        top_words[i] = final_words
-    
     return top_words

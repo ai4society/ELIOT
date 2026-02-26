@@ -6,7 +6,7 @@ import numpy as np
 import skfuzzy as fuzz
 import streamlit as st
 from sklearn.cluster import KMeans, HDBSCAN
-from sklearn.decomposition import PCA
+from umap import UMAP
 from sklearn.metrics import (
     calinski_harabasz_score,
     davies_bouldin_score,
@@ -15,135 +15,121 @@ from sklearn.metrics import (
 
 from arxiv_searcher import Paper
 from .preprocessing import (
-    preprocess_and_vectorize,
+    preprocess_texts,
     get_top_k_words_from_svd_centroids,
 )
 
 
 MIN_PAPERS_FOR_CLUSTERING = 15
-
+_DEFAULT_METRICS = {"SIL": 0, "DBI": 0, "CHI": 0}
 
 @st.cache_resource(show_spinner=False)
 def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
     """
     Performs Soft Clustering (Fuzzy C-Means) on a list of papers.
     Returns:
-        Tuple (clusters_dict, top_words_dict)
+        Tuple (clusters_dict, top_words_dict, metrics)
         - clusters_dict: {cluster_id: [list_of_papers]}
         - top_words_dict: {cluster_id: [top_words]}
+        - metrics: Dictionary of clustering quality metrics
     """
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
-        return {0: papers}, {}, {}
-    
-    if n_clusters > 10: 
+        return {0: papers}, {}, _DEFAULT_METRICS
+
+    if n_clusters > 10:
         n_clusters = 10
-    
-    #threshold = min(1.5 * (1 / n_clusters), 0.3)
+
+    # Minimum membership probability for a secondary cluster assignment.
     threshold = 0.3
 
     try:
-        X_normalized, svd, vec = preprocess_and_vectorize(papers, n_components=100)
-        
-        if X_normalized is None:
-            return {0: papers}, {}, {}
-
+        X_normalized = preprocess_texts(papers)
         X_transposed = X_normalized.T
 
         cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
-            X_transposed, 
-            c=n_clusters, 
-            m=1.7,  # Fuzziness parameter
-            error=0.005, 
-            maxiter=1000, 
-            metric="cosine"
+            X_transposed,
+            c=n_clusters,
+            m=1.7,       # fuzziness parameter
+            error=0.005,
+            maxiter=1000,
         )
 
-        # Assign papers to clusters
-        clusters = {i: [] for i in range(n_clusters)}
-        
-        for paper_idx in range(len(papers)):
+        # ------------------------------------------------------------------ #
+        # Cluster assignment (soft)
+        #
+        # Every paper is guaranteed a place in its best cluster.
+        # It is also added to any other cluster whose membership value
+        # exceeds the threshold (allow multi-cluster membership).
+        # ------------------------------------------------------------------ #
+        clusters: Dict[int, list] = {i: [] for i in range(n_clusters)}
+
+        for paper_idx, paper in enumerate(papers):
             membership_values = u[:, paper_idx]
-            
-            # Always assign to best cluster
             best_cluster = int(np.argmax(membership_values))
-            clusters[best_cluster].append(papers[paper_idx])
-            
-            # Also assign to other clusters if membership is high enough
+
+            clusters[best_cluster].append(paper)
+
             for cluster_idx, prob in enumerate(membership_values):
                 if cluster_idx != best_cluster and prob >= threshold:
-                    clusters[cluster_idx].append(papers[paper_idx])
-        
-        # Remove empty clusters
-        clusters = {k: v for k, v in clusters.items() if len(v) > 0}
+                    clusters[cluster_idx].append(paper)
 
-        # Identify hard (primary) cluster assignment for each paper
-        primary_assignment = np.argmax(u, axis=0) # Cluster with the highest membership for each paper
-        
-        # This next loop avoids have same top k words equal for all clusters 
-    
-        # We recompute centroids using only hard assignments to obtain
-        # cluster-specific representations for keyword extraction.
-        # Soft FCM centroids collapsed to very similar TF-IDF vectors after SVD inversion,
-        # causing all clusters to share the same top-k words.
+        # Drop clusters that ended up empty
+        clusters = {k: v for k, v in clusters.items() if v}
 
-        # Recalculate centroid for each cluster using only its hard assignments
-        new_centroids = []
+        # Hard assignment
+        primary_assignment = np.argmax(u, axis=0)
+
+        # ------------------------------------------------------------------ #
+        # Centroid recomputation for keyword extraction
+        #
+        # We intentionally recompute centroids using only hard-assigned papers
+        # instead of the soft FCM centroids.  Soft centroids collapse to very
+        # similar TF-IDF vectors after SVD projection, causing every cluster
+        # to share the same top-k keywords.  Hard-assignment centroids are
+        # cluster-specific and yield distinct keyword sets.
+        # ------------------------------------------------------------------ #
+        hard_centroids = []
         for cluster_id in range(n_clusters):
-            # Index of the primary papers in this cluster
             primary_indices = np.where(primary_assignment == cluster_id)[0]
-            
             if len(primary_indices) > 0:
-                cluster_vectors = X_normalized[primary_indices]
-                new_centroid = cluster_vectors.mean(axis=0)
-                new_centroids.append(new_centroid)
+                centroid = X_normalized[primary_indices].mean(axis=0)
             else:
-                # Fallback use Fuzzy's original centroid
-                new_centroids.append(cntr[cluster_id])
-        
-        new_centroids = np.array(new_centroids)
-        
+                # Fallback use the original FCM centroid when no paper was
+                # hard-assigned to this cluster.
+                centroid = cntr[cluster_id]
+            hard_centroids.append(centroid)
+
+        hard_centroids = np.array(hard_centroids)
         top_clusters_words = get_top_k_words_from_svd_centroids(
-            new_centroids, svd, vec, top_k=3
+            hard_centroids, top_k=3
         )
 
-        metrics = {}
         y_pred = primary_assignment
-        plot_clusters_pca(X_normalized, y_pred)
+        plot_clusters_umap(X_normalized, y_pred)
 
-        metrics["SIL"] = silhouette_score(
-            X_normalized,
-            y_pred,
-            metric="euclidean"
-        )
-        metrics["DBI"] = davies_bouldin_score(
-            X_normalized,
-            y_pred
-        )
-        metrics["CHI"] = calinski_harabasz_score(
-            X_normalized,
-            y_pred
+        metrics = {
+            "SIL": silhouette_score(X_normalized, y_pred, metric="cosine"),
+            "DBI": davies_bouldin_score(X_normalized, y_pred),
+            "CHI": calinski_harabasz_score(X_normalized, y_pred),
+        }
+
+        papers_in_multiple_clusters = sum(
+            1
+            for paper in papers
+            if sum(paper in v for v in clusters.values()) > 1
         )
 
         print(f"Fuzzy Clustering: {len(clusters)} clusters, FPC={fpc:.3f}")
-        print(f"SVD explained variance: {svd.explained_variance_ratio_.sum():.2%}")
         print(f"Metrics: {metrics}")
         print(f"Top words: {top_clusters_words}")
-
-        count_multi = 0
-        for paper_idx in range(len(papers)):
-            paper = papers[paper_idx]
-            num_clusters = sum(1 for cluster_papers in clusters.values() if paper in cluster_papers)
-            if num_clusters > 1:
-                count_multi += 1
-
-        print(f"\nTotal: {count_multi}/{len(papers)} papers in more than 1 cluster")
+        print(f"\nTotal: {papers_in_multiple_clusters}/{len(papers)} papers in more than 1 cluster")
         print("=" * 50 + "\n")
 
         return dict(sorted(clusters.items())), top_clusters_words, metrics
-        
+
     except Exception as e:
-        logging.error(f"Fuzzy Clustering error: {e}")
-        return {0: papers}, {}, {}
+       logging.error(f"Fuzzy Clustering error: {e}")
+       return {0: papers}, {}, _DEFAULT_METRICS
 
 
 @st.cache_resource(show_spinner=False)
@@ -158,73 +144,91 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
     """
 
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
-        return {0: papers}, {}, {}
+        return {0: papers}, {}, _DEFAULT_METRICS
 
     try:
-        X_normalized, svd, vec = preprocess_and_vectorize(papers, n_components=100)
+        X_normalized = preprocess_texts(papers)
 
-        if X_normalized is None:
-            return {0: papers}, {}, {}
-
-        clusterer = HDBSCAN(min_cluster_size=8, min_samples=1, metric="euclidean", cluster_selection_method="eom")
+        clusterer = HDBSCAN(
+            min_cluster_size=3,
+            min_samples=1,
+            metric="euclidean",
+            cluster_selection_method="eom",
+        )
         labels = clusterer.fit_predict(X_normalized)
 
-        clusters_by_label = {}
-        for i, lab in enumerate(labels):
-            clusters_by_label.setdefault(lab, []).append(i)
+        # Map each HDBSCAN label to the indices of its assigned papers
+        paper_indices_by_label: Dict[int, list] = {}
+        for paper_idx, label in enumerate(labels):
+            paper_indices_by_label.setdefault(label, []).append(paper_idx)
 
-        clusters = {}
+        # ------------------------------------------------------------------ #
+        # Cluster dictionary construction
+        #
+        # Noise points (label == -1) are collected into Cluster 0 so the UI
+        # can display them as "Uncategorized".
+        # Real clusters are remapped to contiguous IDs starting at 1.
+        # ------------------------------------------------------------------ #
+        noise_indices = paper_indices_by_label.get(-1, [])
+        clusters: Dict[int, list] = {0: [papers[i] for i in noise_indices]}
 
-        # noise becomes Cluster 0 (Uncategorized)
-        noise_idx = clusters_by_label.get(-1, [])
-        clusters[0] = [papers[i] for i in noise_idx]
+        real_labels = sorted(l for l in paper_indices_by_label if l != -1)
+        label_to_cid = {label: (rank + 1) for rank, label in enumerate(real_labels)}
 
-        # real clusters remapped to 1..K
-        real_labels = sorted([l for l in clusters_by_label.keys() if l != -1])
-        label_to_cid = {l: (j + 1) for j, l in enumerate(real_labels)}
+        for label in real_labels:
+            cid = label_to_cid[label]
+            clusters[cid] = [papers[i] for i in paper_indices_by_label[label]]
 
-        for l in real_labels:
-            cid = label_to_cid[l]
-            clusters[cid] = [papers[i] for i in clusters_by_label[l]]
+        # Drop any cluster that ended up empty (e.g. empty noise bucket)
+        clusters = {k: v for k, v in clusters.items() if v}
 
-        # Remove empty
-        clusters = {k: v for k, v in clusters.items() if len(v) > 0}
-
-        # Centroids for keywords, excludes Cluster 0 (noise)
+        # ------------------------------------------------------------------ #
+        # Keyword extraction
+        #
+        # Centroids are computed only for real (non-noise) clusters;
+        # Cluster 0 receives an empty keyword list.
+        # get_top_k_words_from_svd_centroids returns keys 0..K-1, so we
+        # remap them to the actual cluster IDs (1..K).
+        # ------------------------------------------------------------------ #
         centroids = []
         centroid_cids = []
-        for l in real_labels:
-            idx = np.array(clusters_by_label[l], dtype=int)
+        for label in real_labels:
+            idx = np.array(paper_indices_by_label[label], dtype=int)
             if len(idx) == 0:
                 continue
             centroids.append(X_normalized[idx].mean(axis=0))
-            centroid_cids.append(label_to_cid[l])
+            centroid_cids.append(label_to_cid[label])
 
-        centroids = np.vstack(centroids)
-        tmp = get_top_k_words_from_svd_centroids(centroids, svd, vec, top_k=3)  # keys 0..K-1
-        top_words = {cid: tmp[i] for i, cid in enumerate(centroid_cids)}        # keys 1..K
-        top_words[0] = []  
+        raw_top_words = get_top_k_words_from_svd_centroids(  # keys 0..K-1
+            np.vstack(centroids), top_k=3
+        )
+        top_words = {cid: raw_top_words[i] for i, cid in enumerate(centroid_cids)}  # keys 1..K
+        top_words[0] = []
 
-        metrics = {}
-        mask = labels != -1
-        y_eval = labels[mask]
-        X_eval = X_normalized[mask]
+        # Metrics (evaluated on non-noise points only)
+        non_noise_mask = labels != -1
+        y_eval = labels[non_noise_mask]
+        X_eval = X_normalized[non_noise_mask]
 
         if len(np.unique(y_eval)) >= 2:
-            metrics["SIL"] = silhouette_score(X_eval, y_eval, metric="euclidean")
-            metrics["DBI"] = davies_bouldin_score(X_eval, y_eval)
-            metrics["CHI"] = calinski_harabasz_score(X_eval, y_eval)
+            metrics = {
+                "SIL": silhouette_score(X_eval, y_eval, metric="cosine"),
+                "DBI": davies_bouldin_score(X_eval, y_eval),
+                "CHI": calinski_harabasz_score(X_eval, y_eval),
+            }
         else:
-            metrics = {"SIL": 0, "DBI": 0, "CHI": 0}
+            metrics = _DEFAULT_METRICS
 
         noise_ratio = float(np.mean(labels == -1))
 
+        # Build a per-paper label array that uses cluster IDs (not raw HDBSCAN
+        # labels) so the PCA plot is consistent with the cluster dictionary.
         plot_labels = np.zeros(len(papers), dtype=int)
-        for l in real_labels:
-            cid = label_to_cid[l]
-            plot_labels[clusters_by_label[l]] = cid
+        for label in real_labels:
+            cid = label_to_cid[label]
+            plot_labels[paper_indices_by_label[label]] = cid
 
-        plot_clusters_pca(X_normalized, plot_labels)
+        plot_clusters_umap(X_normalized, plot_labels)
 
         print(f"HDBSCAN Clustering: {len(clusters)} clusters (including noise)")
         print(f"Metrics: {metrics}")
@@ -233,13 +237,20 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         return dict(sorted(clusters.items())), top_words, metrics
 
     except Exception as e:
-     logging.error(f"HDBSCAN Clustering error: {e}")
-     return {0: papers}, {}, {}
+       logging.error(f"HDBSCAN Clustering error: {e}")
+       return {0: papers}, {}, _DEFAULT_METRICS
 
 
-def plot_clusters_pca(X, labels, save_path="clusters_pca.png"):
-    pca = PCA(n_components=2, random_state=42)
-    X_2d = pca.fit_transform(X)
+def plot_clusters_umap(X, labels, save_path="clusters_umap.png"):
+    K = max(1, len(np.unique(labels)))
+    n_neighbors = max(2, min(X.shape[0] - 1, X.shape[0] // K))
+    
+    reducer = UMAP(
+        n_components=2,
+        n_neighbors=n_neighbors,
+        random_state=42,
+    )
+    X_2d = reducer.fit_transform(X)
 
     plt.figure(figsize=(8, 6))
 
@@ -253,9 +264,9 @@ def plot_clusters_pca(X, labels, save_path="clusters_pca.png"):
             label=f"Cluster {k}"
         )
 
-    plt.xlabel("PC1")
-    plt.ylabel("PC2")
-    plt.title("Clusters (PCA projection)")
+    plt.xlabel("UMAP Dimension 1")
+    plt.ylabel("UMAP Dimension 2")
+    plt.title("Clusters (UMAP projection)")
     plt.legend()
     plt.tight_layout()
     plt.savefig(save_path, dpi=300)
