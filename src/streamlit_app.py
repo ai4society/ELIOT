@@ -242,13 +242,16 @@ if search_button:
 
             st.session_state["search_results"]["papers"] = papers
 
-            if papers:
+            if len(papers) >= MIN_PAPERS_FOR_CLUSTERING:
                 clusters, top_words, metrics = get_paper_clusters_hdbscan(papers)
-                st.session_state["search_results"]["clusters"] = clusters
-                st.session_state["search_results"]["top_words"] = top_words
-                st.session_state["search_results"]["metrics"] = metrics
+            else:
+                clusters, top_words, metrics = {0: papers}, {}, {}
 
+            st.session_state["search_results"]["clusters"] = clusters
+            st.session_state["search_results"]["top_words"] = top_words
+            st.session_state["search_results"]["metrics"] = metrics
             st.session_state["search_results"]["searched"] = True
+    
         except (InvalidKeywordError, InvalidDateRangeError, TooManyKeywordsError) as e:
             st.error(f"⚠️ {str(e)}")
             logging.error(f"Input error: {str(e)}")
@@ -260,6 +263,9 @@ if search_button:
             logging.error(f"Unexpected error: {str(e)}")
 
 if st.session_state["search_results"]["searched"] and st.session_state["search_results"]["papers"]:
+    papers = st.session_state["search_results"]["papers"]
+    clustering_active = len(papers) >= MIN_PAPERS_FOR_CLUSTERING
+    
     col_results = st.columns(1)[0]
     with col_results:
         # Show number of results
@@ -274,47 +280,48 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
 
     cluster_ids = list(clusters.keys())
 
-    col_toggle = st.columns(1)[0]
-    with col_toggle:
-        show_clusters = st.toggle("Show Clusters", value=True)
+    if clustering_active:
 
-    if show_clusters:
-        col_radio, col_button = st.columns([0.55, 1.2], vertical_alignment="center")
+        col_toggle = st.columns(1)[0]
+        with col_toggle:
+            show_clusters = st.toggle("Show Clusters", value=True)
 
-        with col_radio:
-            method = st.radio(
-                "Clustering Method",
-                ["Auto-detect clusters", "Specify number of clusters"],
-                label_visibility="visible",
-                help=("Controls how papers are grouped. Auto-detect automatically discovers "
-                      "topic groups from the data. Specify number allows you to manually set "
-                      "how many clusters will be created.")
-            )
+        if show_clusters:
+            col_radio, col_button = st.columns([0.55, 1.2], vertical_alignment="center")
 
-        with col_button:
-            cluster_button = st.button("Cluster")
-
-        if method == "Specify number of clusters":
-            col_slider, _ = st.columns([0.6, 0.7]) 
-            with col_slider:
-                n_clusters = st.slider(
-                    "Number of Clusters", 
-                    min_value=1, 
-                    max_value=10, 
-                    value=len(cluster_ids) if len(cluster_ids) <= 10 else 5
+            with col_radio:
+                method = st.radio(
+                    "Clustering Method",
+                    ["Auto-detect clusters", "Specify number of clusters"],
+                    label_visibility="visible",
+                    help=("Controls how papers are grouped. Auto-detect automatically discovers "
+                        "topic groups from the data. Specify number allows you to manually set "
+                        "how many clusters will be created.")
                 )
 
-        if cluster_button:
-            if method == "Auto-detect clusters":
-                clusters, top_words, metrics = get_paper_clusters_hdbscan(st.session_state['search_results']['papers'])
-            else:
-                clusters, top_words, metrics = get_paper_clusters_fuzzy(st.session_state['search_results']['papers'], n_clusters)
+            with col_button:
+                cluster_button = st.button("Cluster")
 
-            st.session_state["search_results"]["clusters"] = clusters
-            st.session_state["search_results"]["top_words"] = top_words
-            st.session_state["search_results"]["metrics"] = metrics
- 
-        if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
+            if method == "Specify number of clusters":
+                col_slider, _ = st.columns([0.6, 0.7]) 
+                with col_slider:
+                    n_clusters = st.slider(
+                        "Number of Clusters", 
+                        min_value=1, 
+                        max_value=10, 
+                        value=len(cluster_ids) if len(cluster_ids) <= 10 else 5
+                    )
+
+            if cluster_button:
+                if method == "Auto-detect clusters":
+                    clusters, top_words, metrics = get_paper_clusters_hdbscan(st.session_state['search_results']['papers'])
+                else:
+                    clusters, top_words, metrics = get_paper_clusters_fuzzy(st.session_state['search_results']['papers'], n_clusters)
+
+                st.session_state["search_results"]["clusters"] = clusters
+                st.session_state["search_results"]["top_words"] = top_words
+                st.session_state["search_results"]["metrics"] = metrics
+
             st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
             cluster_ids = list(clusters.keys())
@@ -361,15 +368,15 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
             except Exception as e:
                 st.warning("Visualization failed")
                 logging.error(f"Visualization failed: {e}")
-        else:
-            st.info("Not enough papers to visualize clusters.")
+    else:
+        st.info("Not enough papers to visualize clusters.")
 
     # Show papers by cluster
     tabs = st.tabs([f"Cluster {cid}" for cid in cluster_ids])
 
     for tab, cluster_id in zip(tabs, cluster_ids):
         with tab:
-            if len(st.session_state['search_results']['papers']) >= MIN_PAPERS_FOR_CLUSTERING:
+            if clustering_active:
                 base_html = """
                 <div class='cluster-info'>
                     <span class='cluster-paper-count'>📄 {paper_count} Papers</span>
