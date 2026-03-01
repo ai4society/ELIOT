@@ -6,6 +6,7 @@ import numpy as np
 import skfuzzy as fuzz
 import streamlit as st
 from sklearn.cluster import KMeans, HDBSCAN
+from kneed import KneeLocator
 from umap import UMAP
 from sklearn.metrics import (
     calinski_harabasz_score,
@@ -21,114 +22,78 @@ from .preprocessing import (
 
 
 MIN_PAPERS_FOR_CLUSTERING = 15
+MAX_NUMBER_OF_CLUSTERS = 15
 _DEFAULT_METRICS = {"SIL": 0, "DBI": 0, "CHI": 0}
 
+
 @st.cache_resource(show_spinner=False)
-def get_paper_clusters_fuzzy(papers: List[Paper], n_clusters: int = 5):
-    """
-    Performs Soft Clustering (Fuzzy C-Means) on a list of papers.
-    Returns:
-        Tuple (clusters_dict, top_words_dict, metrics)
-        - clusters_dict: {cluster_id: [list_of_papers]}
-        - top_words_dict: {cluster_id: [top_words]}
-        - metrics: Dictionary of clustering quality metrics
-    """
+def get_optimal_k(papers: List[Paper]) -> int:
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
-        return {0: papers}, {}, _DEFAULT_METRICS
-
-    if n_clusters > 10:
-        n_clusters = 10
-
-    # Minimum membership probability for a secondary cluster assignment.
-    threshold = 0.3
+        return 1
 
     try:
         X_normalized = preprocess_texts(papers)
-        X_transposed = X_normalized.T
+        K_range = range(2, MAX_NUMBER_OF_CLUSTERS)
+        silhouettes = []
+        for k in K_range:
+            kmeans_temp = KMeans(n_clusters=k, random_state=42, init="k-means++", n_init=1, max_iter=300)
+            kmeans_temp.fit(X_normalized)
+            silhouettes.append(silhouette_score(X_normalized, kmeans_temp.labels_, metric="cosine"))
+        
+        n_clusters = int(KneeLocator(list(K_range), silhouettes, curve="concave", direction="increasing").knee)
+        
+        logging.info(f"Optimal K: {n_clusters}")
+        print(f"Optimal K: {n_clusters}")
+        return n_clusters
+        
+    except Exception as e:
+        logging.error(f"Optimal K error: {e}")
+        return 1
 
-        cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
-            X_transposed,
-            c=n_clusters,
-            m=1.7,       # fuzziness parameter
-            error=0.005,
-            maxiter=1000,
-        )
 
-        # ------------------------------------------------------------------ #
-        # Cluster assignment (soft)
-        #
-        # Every paper is guaranteed a place in its best cluster.
-        # It is also added to any other cluster whose membership value
-        # exceeds the threshold (allow multi-cluster membership).
-        # ------------------------------------------------------------------ #
+@st.cache_resource(show_spinner=False)
+def get_papers_kmeans(papers: List[Paper], n_clusters: int = 5):
+    if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
+        return {0: papers}, {}, _DEFAULT_METRICS
+
+    if n_clusters > MAX_NUMBER_OF_CLUSTERS:
+        n_clusters = MAX_NUMBER_OF_CLUSTERS
+
+    try:
+        X_normalized = preprocess_texts(papers)
+        model = KMeans(n_clusters=n_clusters, random_state=42, init="k-means++", n_init=1, max_iter=300)
+        y_pred = model.fit_predict(X_normalized)
+        plot_clusters_umap(X_normalized, y_pred)
+
         clusters: Dict[int, list] = {i: [] for i in range(n_clusters)}
-
+        
         for paper_idx, paper in enumerate(papers):
-            membership_values = u[:, paper_idx]
-            best_cluster = int(np.argmax(membership_values))
-
-            clusters[best_cluster].append(paper)
-
-            for cluster_idx, prob in enumerate(membership_values):
-                if cluster_idx != best_cluster and prob >= threshold:
-                    clusters[cluster_idx].append(paper)
-
+            clusters[int(y_pred[paper_idx])].append(paper)
+            
         # Drop clusters that ended up empty
         clusters = {k: v for k, v in clusters.items() if v}
 
-        # Hard assignment
-        primary_assignment = np.argmax(u, axis=0)
-
-        # ------------------------------------------------------------------ #
-        # Centroid recomputation for keyword extraction
-        #
-        # We intentionally recompute centroids using only hard-assigned papers
-        # instead of the soft FCM centroids.  Soft centroids collapse to very
-        # similar TF-IDF vectors after SVD projection, causing every cluster
-        # to share the same top-k keywords.  Hard-assignment centroids are
-        # cluster-specific and yield distinct keyword sets.
-        # ------------------------------------------------------------------ #
-        hard_centroids = []
-        for cluster_id in range(n_clusters):
-            primary_indices = np.where(primary_assignment == cluster_id)[0]
-            if len(primary_indices) > 0:
-                centroid = X_normalized[primary_indices].mean(axis=0)
-            else:
-                # Fallback use the original FCM centroid when no paper was
-                # hard-assigned to this cluster.
-                centroid = cntr[cluster_id]
-            hard_centroids.append(centroid)
-
-        hard_centroids = np.array(hard_centroids)
         top_clusters_words = get_top_k_words_from_svd_centroids(
-            hard_centroids, top_k=3
+            model.cluster_centers_, top_k=3
         )
 
-        y_pred = primary_assignment
-        plot_clusters_umap(X_normalized, y_pred)
+        if len(np.unique(y_pred)) >= 2:
+            metrics = {
+                "SIL": silhouette_score(X_normalized, y_pred, metric="cosine"),
+                "DBI": davies_bouldin_score(X_normalized, y_pred),
+                "CHI": calinski_harabasz_score(X_normalized, y_pred),
+            }
+        else:
+            metrics = _DEFAULT_METRICS
 
-        metrics = {
-            "SIL": silhouette_score(X_normalized, y_pred, metric="cosine"),
-            "DBI": davies_bouldin_score(X_normalized, y_pred),
-            "CHI": calinski_harabasz_score(X_normalized, y_pred),
-        }
-
-        papers_in_multiple_clusters = sum(
-            1
-            for paper in papers
-            if sum(paper in v for v in clusters.values()) > 1
-        )
-
-        print(f"Fuzzy Clustering: {len(clusters)} clusters, FPC={fpc:.3f}")
+        print(f"K-Means Clustering: {len(clusters)} clusters")
         print(f"Metrics: {metrics}")
-        print(f"Top words: {top_clusters_words}")
-        print(f"\nTotal: {papers_in_multiple_clusters}/{len(papers)} papers in more than 1 cluster")
         print("=" * 50 + "\n")
 
         return dict(sorted(clusters.items())), top_clusters_words, metrics
 
     except Exception as e:
-       logging.error(f"Fuzzy Clustering error: {e}")
+       logging.error(f"K-Means Clustering error: {e}")
        return {0: papers}, {}, _DEFAULT_METRICS
 
 

@@ -9,7 +9,7 @@ import plotly.express as px
 import streamlit as st
 
 from arxiv_searcher import ARXIV_CATEGORIES, Paper, search
-from ml.ml_utils import MIN_PAPERS_FOR_CLUSTERING, get_paper_clusters_fuzzy, get_paper_clusters_hdbscan
+from ml.ml_utils import MIN_PAPERS_FOR_CLUSTERING, MAX_NUMBER_OF_CLUSTERS, get_optimal_k, get_papers_kmeans, get_paper_clusters_hdbscan
 from exceptions import (
     ArxivSearcherError,
     InvalidKeywordError,
@@ -40,7 +40,7 @@ def search_papers(
     #     if isinstance(r["categories"], str):
     #         r["categories"] = ast.literal_eval(r["categories"])
 
-    # return [Paper(**r) for r in records][0:250]
+    # return [Paper(**r) for r in records][0:100]
 
     return search(
         keywords=keywords,
@@ -170,7 +170,7 @@ DEFAULT_KEYWORDS = "large language models, multi-agent systems"
 
 # Initialize session state
 if "search_results" not in st.session_state:
-    st.session_state["search_results"] = {"papers": [], "searched": False, "clusters": {}, "top_words": {}, "metrics": {}}
+    st.session_state["search_results"] = {"papers": [], "searched": False, "clusters": {}, "top_words": {}, "metrics": {}, "optimal_k": 0}
 
 st.title("Paper Discovery", anchor=False)
 
@@ -226,6 +226,8 @@ with col_search_bt:
 
 # On click
 if search_button:
+    # When making a new search, reset clustering method to default
+    st.session_state["clustering_method"] = "Auto-detect clusters"
     st.session_state["search_results"]["searched"] = False
     with st.spinner("🔎 Searching papers..."):
         try:
@@ -244,12 +246,15 @@ if search_button:
 
             if len(papers) >= MIN_PAPERS_FOR_CLUSTERING:
                 clusters, top_words, metrics = get_paper_clusters_hdbscan(papers)
+                optimal_k = get_optimal_k(papers)
             else:
                 clusters, top_words, metrics = {0: papers}, {}, {}
+                optimal_k = 1
 
             st.session_state["search_results"]["clusters"] = clusters
             st.session_state["search_results"]["top_words"] = top_words
             st.session_state["search_results"]["metrics"] = metrics
+            st.session_state["search_results"]["optimal_k"] = optimal_k
             st.session_state["search_results"]["searched"] = True
     
         except (InvalidKeywordError, InvalidDateRangeError, TooManyKeywordsError) as e:
@@ -293,30 +298,33 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 method = st.radio(
                     "Clustering Method",
                     ["Auto-detect clusters", "Specify number of clusters"],
+                    # Set the current value to session_state["clustering_method"]
+                    key="clustering_method",
                     label_visibility="visible",
                     help=("Controls how papers are grouped. Auto-detect automatically discovers "
                         "topic groups from the data. Specify number allows you to manually set "
                         "how many clusters will be created.")
                 )
-
             with col_button:
                 cluster_button = st.button("Cluster")
 
             if method == "Specify number of clusters":
+                st.toast(f"Based on our analysis, the optimal number of clusters is {st.session_state['search_results']['optimal_k']}.", duration="short", icon="💡")
+
                 col_slider, _ = st.columns([0.6, 0.7]) 
                 with col_slider:
                     n_clusters = st.slider(
                         "Number of Clusters", 
                         min_value=1, 
-                        max_value=10, 
-                        value=len(cluster_ids) if len(cluster_ids) <= 10 else 5
+                        max_value=MAX_NUMBER_OF_CLUSTERS, 
+                        value=st.session_state['search_results']['optimal_k']
                     )
 
             if cluster_button:
                 if method == "Auto-detect clusters":
                     clusters, top_words, metrics = get_paper_clusters_hdbscan(st.session_state['search_results']['papers'])
                 else:
-                    clusters, top_words, metrics = get_paper_clusters_fuzzy(st.session_state['search_results']['papers'], n_clusters)
+                    clusters, top_words, metrics = get_papers_kmeans(st.session_state['search_results']['papers'], n_clusters)
 
                 st.session_state["search_results"]["clusters"] = clusters
                 st.session_state["search_results"]["top_words"] = top_words
