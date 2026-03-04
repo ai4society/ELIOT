@@ -28,22 +28,27 @@ _DEFAULT_METRICS = {"SIL": 0, "DBI": 0, "CHI": 0}
 
 @st.cache_resource(show_spinner=False)
 def get_optimal_k(papers: List[Paper]) -> int:
+    """
+    Find the optimal number of clusters for K-Means clustering
+    using the elbow method on Inertia.
+    """
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
         return 1
 
     try:
         X_normalized = preprocess_texts(papers)
         K_range = range(2, MAX_NUMBER_OF_CLUSTERS)
-        silhouettes = []
+        inertias = []
         for k in K_range:
             kmeans_temp = KMeans(n_clusters=k, random_state=42, init="k-means++", n_init=1, max_iter=300)
             kmeans_temp.fit(X_normalized)
-            silhouettes.append(silhouette_score(X_normalized, kmeans_temp.labels_, metric="cosine"))
+            score = kmeans_temp.inertia_
+            inertias.append(score)
 
-        n_clusters = int(KneeLocator(list(K_range), silhouettes, curve="concave", direction="increasing").knee)
+        knee_locator = KneeLocator(list(K_range), inertias, curve="convex", direction="decreasing")
+        # If no knee is found, return 2 as default
+        n_clusters = int(knee_locator.knee) if knee_locator.knee else 2
 
-        logging.info(f"Optimal K: {n_clusters}")
-        print(f"Optimal K: {n_clusters}")
         return n_clusters
         
     except Exception as e:
@@ -122,8 +127,8 @@ def get_hdbscan_params(n_papers):
         min_cluster_size = int(0.03 * n_papers)
         min_samples = 5
 
-    logging.info("Min size: ", min_cluster_size)
-    logging.info("Min Sample: ", min_samples)
+    logging.info(f"Min size: {min_cluster_size}")
+    logging.info(f"Min Sample: {min_samples}")
     return min_cluster_size, min_samples
 
 
