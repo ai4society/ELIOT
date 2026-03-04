@@ -10,7 +10,7 @@ div[data-testid^="st"] label p {
 }
 
 /* Make only the radio widget title bold (e.g., "Clustering Method") */
-div[data-testid="stRadio"] > label p {
+div[data-testid="stRadio"]>label p {
     font-weight: 700 !important;
 }
 
@@ -221,19 +221,17 @@ div[data-testid="stHorizontalBlock"] {
 
 .tooltip .tooltiptext {
     visibility: hidden;
-    width: 140px;
+    width: 6.5rem;
     background-color: #333;
     color: #fff;
     text-align: center;
-    border-radius: 6px;
-    padding: 5px;
+    border-radius: 0.375rem;
+    padding: 0.3rem;
     position: absolute;
     z-index: 1;
     bottom: 125%;
-    /* Position above */
     left: 50%;
-    margin-left: -70px;
-    /* Center the tooltip */
+    margin-left: -4.35rem;
     opacity: 0;
     transition: opacity 0.3s;
     font-size: 0.75rem;
@@ -245,12 +243,16 @@ div[data-testid="stHorizontalBlock"] {
     content: "";
     position: absolute;
     top: 100%;
-    /* At the bottom of the tooltip */
     left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
+    margin-left: -0.3rem;
+    border-width: 0.3rem;
     border-style: solid;
     border-color: #333 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Enable horizontal scrolling for tabs */
