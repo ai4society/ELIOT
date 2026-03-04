@@ -39,9 +39,9 @@ def get_optimal_k(papers: List[Paper]) -> int:
             kmeans_temp = KMeans(n_clusters=k, random_state=42, init="k-means++", n_init=1, max_iter=300)
             kmeans_temp.fit(X_normalized)
             silhouettes.append(silhouette_score(X_normalized, kmeans_temp.labels_, metric="cosine"))
-        
+
         n_clusters = int(KneeLocator(list(K_range), silhouettes, curve="concave", direction="increasing").knee)
-        
+
         logging.info(f"Optimal K: {n_clusters}")
         print(f"Optimal K: {n_clusters}")
         return n_clusters
@@ -88,6 +88,7 @@ def get_papers_kmeans(papers: List[Paper], n_clusters: int = 5):
 
         print(f"K-Means Clustering: {len(clusters)} clusters")
         print(f"Metrics: {metrics}")
+        print(top_clusters_words)
         print("=" * 50 + "\n")
 
         return dict(sorted(clusters.items())), top_clusters_words, metrics
@@ -95,6 +96,35 @@ def get_papers_kmeans(papers: List[Paper], n_clusters: int = 5):
     except Exception as e:
        logging.error(f"K-Means Clustering error: {e}")
        return {0: papers}, {}, _DEFAULT_METRICS
+
+
+def get_hdbscan_params(n_papers):
+    """
+    Returns the parameters for HDBSCAN based on the number of papers.
+    The idea is to avoid having many clustering for a small len(papers) and more clusters for a bigger len(papers)
+    """
+    if n_papers < 30:
+        return 2, 3
+
+    elif n_papers < 50:
+        min_cluster_size = max(2, int(0.1 * n_papers))
+        min_samples = 3
+
+    elif n_papers < 100:
+        min_cluster_size = max(3, int(0.06 * n_papers))
+        min_samples = None
+
+    elif n_papers < 200:
+        min_cluster_size = int(0.04 * n_papers)
+        min_samples = min_cluster_size // 2
+
+    else:
+        min_cluster_size = int(0.03 * n_papers)
+        min_samples = 5
+
+    logging.info("Min size: ", min_cluster_size)
+    logging.info("Min Sample: ", min_samples)
+    return min_cluster_size, min_samples
 
 
 @st.cache_resource(show_spinner=False)
@@ -114,13 +144,14 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
     try:
         X_normalized = preprocess_texts(papers)
 
-        clusterer = HDBSCAN(
-            min_cluster_size=3,
-            min_samples=1,
+        min_cluster_size, min_sample = get_hdbscan_params(len(papers))
+        model = HDBSCAN(
+            min_cluster_size=min_cluster_size,
+            min_samples=min_sample,
             metric="euclidean",
             cluster_selection_method="eom",
         )
-        labels = clusterer.fit_predict(X_normalized)
+        labels = model.fit_predict(X_normalized)
 
         # Map each HDBSCAN label to the indices of its assigned papers
         paper_indices_by_label: Dict[int, list] = {}
@@ -161,8 +192,12 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
             idx = np.array(paper_indices_by_label[label], dtype=int)
             if len(idx) == 0:
                 continue
-            centroids.append(X_normalized[idx].mean(axis=0))
+            centroid = np.asarray(X_normalized[idx].mean(axis=0)).ravel()
+            centroids.append(centroid)
             centroid_cids.append(label_to_cid[label])
+
+        if len(centroids) == 0:
+            return {0: papers}, {}, _DEFAULT_METRICS
 
         raw_top_words = get_top_k_words_from_svd_centroids(  # keys 0..K-1
             np.vstack(centroids), top_k=3
