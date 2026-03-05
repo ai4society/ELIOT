@@ -71,7 +71,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
 
     df_viz = pd.DataFrame({
         "Year": years,
-        "Cluster": [HDBSCAN_NOISE_CLUSTER_NAME if is_noise_cluster(int(label)) else f"Cluster {label}" for label in all_labels],
+        "Cluster": [f"Cluster {label}" for label in all_labels],
         "x": np.array(years) + jitter_x,
         "y": np.array(cluster_nums) + jitter_y,
         "Title": [p.title for p in ordered_papers],
@@ -113,7 +113,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             title="Cluster ID",
             tickmode='array',
             tickvals=sorted(list(set(cluster_nums))),
-            ticktext=[HDBSCAN_NOISE_CLUSTER_NAME if is_noise_cluster(c) else f"Cluster {c}" for c in sorted(list(set(cluster_nums)))],
+            ticktext=[f"Cluster {c}" for c in sorted(list(set(cluster_nums)))],
             showgrid=True,
             gridcolor='rgba(200, 200, 200, 0.2)'
         ),
@@ -152,8 +152,6 @@ def build_cluster_color_map(cluster_ids: List[str]):
     for i, cid in enumerate(cluster_ids):
         if cid == 0:
             color_map["All Papers"] = palette[i % len(palette)]
-        elif is_noise_cluster(cid):
-            color_map[HDBSCAN_NOISE_CLUSTER_NAME] = palette[i % len(palette)]
         else:
             color_map[f"Cluster {cid}"] = palette[i % len(palette)]
     return color_map
@@ -190,7 +188,6 @@ ORDER_BY_OPTIONS = {
 }
 
 DEFAULT_KEYWORDS = "large language models, multi-agent systems"
-HDBSCAN_NOISE_CLUSTER_NAME = "Cluster 1"
 
 
 # Initialize session state
@@ -395,11 +392,10 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                         badges = ''.join([f"<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>{w}</span>" for w in top_words.get(cid, [])])
 
                         # The cid will never be 0 here
+                        cluster_label = f"Cluster {cid}"
+
                         if is_noise_cluster(cid):
-                            cluster_label = HDBSCAN_NOISE_CLUSTER_NAME
                             badges = "<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>Uncategorized Papers</span>"
-                        else:
-                            cluster_label = f"Cluster {cid}"
                         
                         cluster_color = color_map.get(cluster_label, "var(--uofsc-garnet)")
 
@@ -439,8 +435,6 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
     for cid in cluster_ids:
         if cid == 0:
             tab_titles.append("All Papers")
-        elif is_noise_cluster(cid):
-            tab_titles.append(HDBSCAN_NOISE_CLUSTER_NAME)
         else:
             tab_titles.append(f"Cluster {cid}")
             
