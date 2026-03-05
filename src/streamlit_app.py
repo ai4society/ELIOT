@@ -19,6 +19,7 @@ from exceptions import (
 )
 
 
+@st.cache_data(ttl=timedelta(hours=1), max_entries=1000, show_spinner=False)
 def search_papers(
     keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str
 ) -> List[Paper]:
@@ -40,7 +41,7 @@ def search_papers(
     #     if isinstance(r["categories"], str):
     #         r["categories"] = ast.literal_eval(r["categories"])
 
-    # return [Paper(**r) for r in records][0:100]
+    # return [Paper(**r) for r in records][0:200]
 
     return search(
         keywords=keywords,
@@ -49,6 +50,12 @@ def search_papers(
         sort_by=sort_opt,
         category=category_option,
     )
+
+
+def is_noise_cluster(cid: int) -> bool:
+    """Helper to determine if a cluster ID represents the noise cluster."""
+    method = st.session_state.get("clustering_method", "Auto-detect clusters")
+    return cid == 1 and method == "Auto-detect clusters"
 
 
 def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metrics: dict):
@@ -64,7 +71,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
 
     df_viz = pd.DataFrame({
         "Year": years,
-        "Cluster": [f"Cluster {label}" for label in all_labels],
+        "Cluster": [HDBSCAN_NOISE_CLUSTER_NAME if is_noise_cluster(int(label)) else f"Cluster {label}" for label in all_labels],
         "x": np.array(years) + jitter_x,
         "y": np.array(cluster_nums) + jitter_y,
         "Title": [p.title for p in ordered_papers],
@@ -105,8 +112,8 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         yaxis=dict(
             title="Cluster ID",
             tickmode='array',
-            tickvals=list(range(len(clusters))),
-            ticktext=[f"Cluster {i}" for i in range(len(clusters))],
+            tickvals=sorted(list(set(cluster_nums))),
+            ticktext=[HDBSCAN_NOISE_CLUSTER_NAME if is_noise_cluster(c) else f"Cluster {c}" for c in sorted(list(set(cluster_nums)))],
             showgrid=True,
             gridcolor='rgba(200, 200, 200, 0.2)'
         ),
@@ -143,8 +150,24 @@ def build_cluster_color_map(cluster_ids: List[str]):
     palette = px.colors.qualitative.Plotly
     color_map = {}
     for i, cid in enumerate(cluster_ids):
-        color_map[f"Cluster {cid}"] = palette[i % len(palette)]
+        if cid == 0:
+            color_map["All Papers"] = palette[i % len(palette)]
+        elif is_noise_cluster(cid):
+            color_map[HDBSCAN_NOISE_CLUSTER_NAME] = palette[i % len(palette)]
+        else:
+            color_map[f"Cluster {cid}"] = palette[i % len(palette)]
     return color_map
+
+
+def get_default_session_state():
+    return {
+        "papers": [], 
+        "searched": False, 
+        "clusters": {}, 
+        "top_words": {}, 
+        "metrics": {}, 
+        "optimal_k": 1
+    }
 
 
 st.set_page_config(
@@ -167,10 +190,12 @@ ORDER_BY_OPTIONS = {
 }
 
 DEFAULT_KEYWORDS = "large language models, multi-agent systems"
+HDBSCAN_NOISE_CLUSTER_NAME = "Cluster 1"
+
 
 # Initialize session state
 if "search_results" not in st.session_state:
-    st.session_state["search_results"] = {"papers": [], "searched": False, "clusters": {}, "top_words": {}, "metrics": {}, "optimal_k": 0}
+    st.session_state["search_results"] = get_default_session_state()
 
 st.title("Paper Discovery", anchor=False)
 
@@ -226,9 +251,10 @@ with col_search_bt:
 
 # On click
 if search_button:
-    # When making a new search, reset clustering method to default
+    # When making a new search, reset the session state
     st.session_state["clustering_method"] = "Auto-detect clusters"
-    st.session_state["search_results"]["searched"] = False
+    st.session_state["search_results"] = get_default_session_state()
+
     with st.spinner("🔎 Searching papers..."):
         try:
             if not keywords:
@@ -242,21 +268,26 @@ if search_button:
                 category_option=category_option,
             )
 
+            st.session_state["search_results"]["searched"] = True
             st.session_state["search_results"]["papers"] = papers
+
+            ui_clusters, ui_top_words = {}, {}
 
             if len(papers) >= MIN_PAPERS_FOR_CLUSTERING:
                 clusters, top_words, metrics = get_paper_clusters_hdbscan(papers)
-                optimal_k = get_optimal_k(papers)
-            else:
-                clusters, top_words, metrics = {0: papers}, {}, {}
-                optimal_k = 1
+                st.session_state["search_results"]["metrics"] = metrics
+                # Optimal K is for K-Means
+                st.session_state["search_results"]["optimal_k"] = get_optimal_k(papers)
 
-            st.session_state["search_results"]["clusters"] = clusters
-            st.session_state["search_results"]["top_words"] = top_words
-            st.session_state["search_results"]["metrics"] = metrics
-            st.session_state["search_results"]["optimal_k"] = optimal_k
-            st.session_state["search_results"]["searched"] = True
-    
+                # Shift clusters by 1 for UI representation
+                ui_clusters = {k + 1: v for k, v in clusters.items()}
+                ui_top_words = {k + 1: v for k, v in top_words.items()}
+
+            # Add All Papers as Cluster 0
+            ui_clusters[0] = papers
+            ui_top_words[0] = []
+            st.session_state["search_results"]["clusters"] = ui_clusters
+            st.session_state["search_results"]["top_words"] = ui_top_words
         except (InvalidKeywordError, InvalidDateRangeError, TooManyKeywordsError) as e:
             st.error(f"⚠️ {str(e)}")
             logging.error(f"Input error: {str(e)}")
@@ -281,9 +312,10 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
 
     # Show each paper
     clusters = st.session_state["search_results"].get("clusters")
-    top_words = st.session_state["search_results"].get("top_words", {})
+    top_words = st.session_state["search_results"].get("top_words")
 
-    cluster_ids = list(clusters.keys())
+    # Define this variable here to avoid error when "Show Clusters" is not active
+    cluster_ids = sorted(list(clusters.keys()))
 
     if clustering_active:
 
@@ -321,38 +353,59 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                     )
 
             if cluster_button:
+                # Clusters are returned as a dictionary with keys from 0 to N-1
+                # We shift them by 1 for UI representation
+
                 if method == "Auto-detect clusters":
                     clusters, top_words, metrics = get_paper_clusters_hdbscan(st.session_state['search_results']['papers'])
                 else:
                     clusters, top_words, metrics = get_papers_kmeans(st.session_state['search_results']['papers'], n_clusters)
 
-                st.session_state["search_results"]["clusters"] = clusters
-                st.session_state["search_results"]["top_words"] = top_words
+                # Shift clusters by 1 for UI representation
+                ui_clusters = {k + 1: v for k, v in clusters.items()}
+                ui_top_words = {k + 1: v for k, v in top_words.items()}
+
+                # Add All Papers as Cluster 0
+                ui_clusters[0] = st.session_state['search_results']['papers']
+                ui_top_words[0] = []
+
+                st.session_state["search_results"]["clusters"] = ui_clusters
+                st.session_state["search_results"]["top_words"] = ui_top_words
                 st.session_state["search_results"]["metrics"] = metrics
+
+                # Update local variables so the immediate render correctly uses 1..N instead of 0..N-1
+                clusters = ui_clusters
+                top_words = ui_top_words
 
             st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
-            cluster_ids = list(clusters.keys())
+            cluster_ids = sorted(list(clusters.keys()))
             color_map = build_cluster_color_map(cluster_ids)
 
+            # Filter out cluster 0 for the top words row since it's the 'All Papers' container
+            display_cluster_ids = [cid for cid in cluster_ids if cid != 0]
+
             # Show top words above the cluster graph
-            for row_start in range(0, len(cluster_ids), 3):
-                row_ids = cluster_ids[row_start:row_start + 3]
+            for row_start in range(0, len(display_cluster_ids), 3):
+                row_ids = display_cluster_ids[row_start:row_start + 3]
                 cols = st.columns(3)
                 
                 for col, cid in zip(cols, row_ids):
                     with col:
-                        if cid != 0:
-                            badges = ''.join([f"<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>{w}</span>" for w in top_words[cid]])
-                        else:
-                            badges = "<span style='font-size:0.65rem; padding:0.1rem 0.4rem; border-radius: 12px; background-color:rgba(128, 128, 128, 0.2);'>Uncategorized</span>"
+                        badges = ''.join([f"<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>{w}</span>" for w in top_words.get(cid, [])])
 
-                        cluster_label = f"Cluster {cid}"
+                        # The cid will never be 0 here
+                        if is_noise_cluster(cid):
+                            cluster_label = HDBSCAN_NOISE_CLUSTER_NAME
+                            badges = "<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>Uncategorized Papers</span>"
+                        else:
+                            cluster_label = f"Cluster {cid}"
+                        
                         cluster_color = color_map.get(cluster_label, "var(--uofsc-garnet)")
 
                         st.markdown(
                             f"<div style='display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.3rem;'>"
-                            f"<span style='font-size:0.75rem; font-weight:700; color:{cluster_color};'>Cluster {cid}</span>"
+                            f"<span style='font-size:0.75rem; font-weight:700; color:{cluster_color};'>{cluster_label}</span>"
                             f"{badges}"
                             f"</div>",
                             unsafe_allow_html=True
@@ -363,6 +416,8 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 ordered_papers = []
                 all_labels = []
                 for label, p_list in clusters.items():
+                    if label == 0:
+                        continue
                     for paper in p_list:
                         ordered_papers.append(paper)
                         all_labels.append(str(label))
@@ -380,7 +435,16 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
         st.info("Not enough papers to visualize clusters.")
 
     # Show papers by cluster
-    tabs = st.tabs([f"Cluster {cid}" for cid in cluster_ids])
+    tab_titles = []
+    for cid in cluster_ids:
+        if cid == 0:
+            tab_titles.append("All Papers")
+        elif is_noise_cluster(cid):
+            tab_titles.append(HDBSCAN_NOISE_CLUSTER_NAME)
+        else:
+            tab_titles.append(f"Cluster {cid}")
+            
+    tabs = st.tabs(tab_titles)
 
     for tab, cluster_id in zip(tabs, cluster_ids):
         with tab:
@@ -393,12 +457,20 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 """
                 paper_count = len(clusters[cluster_id])
 
-                # Cluster 0 is the "Uncategorized" cluster
                 if cluster_id == 0:
+                    # All papers cluster don't have keywords
                     st.markdown(
                         base_html.format(
                             paper_count=paper_count,
-                            extra="<span class='cluster-uncategorized'>Uncategorized</span>"
+                            extra=""
+                        ),
+                        unsafe_allow_html=True
+                    )
+                elif is_noise_cluster(cluster_id):
+                    st.markdown(
+                        base_html.format(
+                            paper_count=paper_count,
+                            extra="<span class='cluster-uncategorized'>Papers not assigned to any of the clusters (Uncategorized)</span>"
                         ),
                         unsafe_allow_html=True
                     )
