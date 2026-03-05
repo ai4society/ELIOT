@@ -13,7 +13,7 @@ from arxiv_searcher import Paper
 
 
 _LEMMATIZER = WordNetLemmatizer()
-VECTORIZER = TfidfVectorizer(min_df=3, max_df=0.7, max_features=3000, ngram_range=(1, 3))
+VECTORIZER = TfidfVectorizer(min_df=3, max_df=0.7, max_features=3000, ngram_range=(1, 3), stop_words="english")
 SVD = TruncatedSVD(n_components=5, random_state=42)
 
 resources = [
@@ -69,7 +69,6 @@ def preprocess_texts(papers: List[Paper]):
     X = VECTORIZER.fit_transform(clean_text)
     X = SVD.fit_transform(X)
     X = normalize(X, norm="l2")
-    print(f"SVD explained variance: {SVD.explained_variance_ratio_.sum():.2%}")
 
     return X
 

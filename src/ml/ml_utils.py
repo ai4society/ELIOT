@@ -5,21 +5,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import skfuzzy as fuzz
 import streamlit as st
-from sklearn.cluster import KMeans, HDBSCAN
 from kneed import KneeLocator
-from umap import UMAP
+from sklearn.cluster import HDBSCAN, KMeans
 from sklearn.metrics import (
     calinski_harabasz_score,
     davies_bouldin_score,
     silhouette_score,
 )
+from umap import UMAP
 
 from arxiv_searcher import Paper
 from .preprocessing import (
-    preprocess_texts,
     get_top_k_words_from_svd_centroids,
+    preprocess_texts,
 )
-
 
 MIN_PAPERS_FOR_CLUSTERING = 15
 MAX_NUMBER_OF_CLUSTERS = 15
@@ -68,7 +67,7 @@ def get_papers_kmeans(papers: List[Paper], n_clusters: int = 5):
         X_normalized = preprocess_texts(papers)
         model = KMeans(n_clusters=n_clusters, random_state=42, init="k-means++", n_init=1, max_iter=300)
         y_pred = model.fit_predict(X_normalized)
-        plot_clusters_umap(X_normalized, y_pred)
+        plot_clusters_umap(is_hdbscan=False, X=X_normalized, labels=y_pred)
 
         clusters: Dict[int, list] = {i: [] for i in range(n_clusters)}
         
@@ -106,7 +105,7 @@ def get_papers_kmeans(papers: List[Paper], n_clusters: int = 5):
 def get_hdbscan_params(n_papers):
     """
     Returns the parameters for HDBSCAN based on the number of papers.
-    The idea is to avoid having many clustering for a small len(papers) and more clusters for a bigger len(papers)
+    The idea is to avoid having too many clusters for a small len(papers) and more clusters for a larger len(papers).
     """
     if n_papers < 30:
         return 2, 3
@@ -167,7 +166,7 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         # Cluster dictionary construction
         #
         # Noise points (label == -1) are collected into Cluster 0 so the UI
-        # can display them as "Uncategorized".
+        # can display them as "Noise Cluster".
         # Real clusters are remapped to contiguous IDs starting at 1.
         # ------------------------------------------------------------------ #
         noise_indices = paper_indices_by_label.get(-1, [])
@@ -186,7 +185,7 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         # ------------------------------------------------------------------ #
         # Keyword extraction
         #
-        # Centroids are computed only for real (non-noise) clusters;
+        # Centroids are computed only for real (non-noise) clusters.
         # Cluster 0 receives an empty keyword list.
         # get_top_k_words_from_svd_centroids returns keys 0..K-1, so we
         # remap them to the actual cluster IDs (1..K).
@@ -233,7 +232,7 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
             cid = label_to_cid[label]
             plot_labels[paper_indices_by_label[label]] = cid
 
-        plot_clusters_umap(X_normalized, plot_labels)
+        plot_clusters_umap(is_hdbscan=True, X=X_normalized, labels=plot_labels)
 
         print(f"HDBSCAN Clustering: {len(clusters)} clusters (including noise)")
         print(f"Metrics: {metrics}")
@@ -246,10 +245,10 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
        return {0: papers}, {}, _DEFAULT_METRICS
 
 
-def plot_clusters_umap(X, labels, save_path="clusters_umap.png"):
-    K = max(1, len(np.unique(labels)))
+def plot_clusters_umap(is_hdbscan, X, labels, save_path="clusters_umap.png"):
+    K = len(np.unique(labels))
     n_neighbors = max(2, min(X.shape[0] - 1, X.shape[0] // K))
-    
+
     reducer = UMAP(
         n_components=2,
         n_neighbors=n_neighbors,
@@ -259,20 +258,23 @@ def plot_clusters_umap(X, labels, save_path="clusters_umap.png"):
 
     plt.figure(figsize=(8, 6))
 
-    for k in np.unique(labels):
-        idx = labels == k
+    for cluster in np.unique(labels):
+        mask = labels == cluster
+        legend_label = "Noise" if (cluster == 0 and is_hdbscan) else f"Cluster {cluster + 1}"
         plt.scatter(
-            X_2d[idx, 0],
-            X_2d[idx, 1],
-            s=40,
-            alpha=0.7,
-            label=f"Cluster {k}"
+            X_2d[mask, 0],
+            X_2d[mask, 1],
+            s=12,
+            alpha=0.75,
+            label=legend_label
         )
 
     plt.xlabel("UMAP Dimension 1")
     plt.ylabel("UMAP Dimension 2")
     plt.title("Clusters (UMAP projection)")
-    plt.legend()
+    plt.legend(title="Clusters", markerscale=2)
+    plt.xticks([])
+    plt.yticks([])
     plt.tight_layout()
-    plt.savefig(save_path, dpi=300)
+    plt.savefig(save_path)
     plt.close()
