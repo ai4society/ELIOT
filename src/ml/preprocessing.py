@@ -6,8 +6,12 @@ from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction import text
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.preprocessing import normalize
+
+from bertopic.vectorizers import ClassTfidfTransformer
+
+import numpy as np
 
 from arxiv_searcher import Paper
 
@@ -73,17 +77,69 @@ def preprocess_texts(papers: List[Paper]):
     return X
 
 
-def get_top_k_words_from_svd_centroids(cntr_svd, top_k=3):
+def _remove_substrings(candidates: List[str], top_k: int):
     """
-    Extracts the main words from each centroid in SVD space.
-    
-    Args:
-        cntr_svd: Centroids in reduced SVD space (n_clusters, n_components)
-        top_k: Number of words by cluster
-    
-    Returns:
-        Dictionary {cluster_id: [top_k_words]}
+    Filter a ranked list of n-gram candidates by removing entries that are
+    substrings of (or contain) another candidate, then return the top_k survivors.
+
+    Example:
+        ["neural network", "network", "deep neural network", "learning"]
+        -> ["neural network", "learning"]  (with top_k=2)
     """
+    final = []
+    for word in candidates:
+        is_substring = any(
+            word != other and (word in other or other in word)
+            for other in candidates
+        )
+        if not is_substring:
+            final.append(word)
+        if len(final) >= top_k:
+            break
+    return final
+
+
+def get_top_k_words_ctfidf(papers, labels, top_k=3):
+    texts = [clean_and_lemmatize(p.title + " " + p.abstract) for p in papers]
+    unique_labels = sorted(set(labels))
+
+    super_docs = [
+        " ".join(texts[i] for i in np.where(labels == lbl)[0])
+        for lbl in unique_labels
+    ]
+
+    vectorizer = CountVectorizer(
+        stop_words="english",
+        max_df=0.7,
+        ngram_range=(2, 3),
+        max_features=3000
+    )
+    ctfidf_model = ClassTfidfTransformer()
+
+    X_counts = vectorizer.fit_transform(super_docs)
+
+    X_ctfidf = ctfidf_model.fit_transform(X_counts)
+    feature_names = vectorizer.get_feature_names_out()
+    top_words = {}
+
+    for i, lbl in enumerate(unique_labels):
+        scores = X_ctfidf[i].toarray().ravel()
+        ranked_indices = scores.argsort()[::-1]
+        candidates = [
+            feature_names[j]
+            # Get the top_k * X candidates to filter out redundancies.
+            # Example:
+            #      ["multi agent", "agent", "agents", "multi agents", "planning"]
+            #      becomes ["multi agent", "planning"]
+            for j in ranked_indices[: top_k * 6]
+            if scores[j] > 0
+        ]
+        top_words[lbl] = _remove_substrings(candidates, top_k)
+
+    return top_words
+
+
+def get_top_k_words(cntr_svd, top_k=3):
     terms = VECTORIZER.get_feature_names_out()
     top_words = {}
 
@@ -91,29 +147,12 @@ def get_top_k_words_from_svd_centroids(cntr_svd, top_k=3):
         # Reconstructs the weights in the original TF-IDF space
         tfidf_weights = SVD.inverse_transform(cntr_svd[i].reshape(1, -1)).ravel()
 
-        # Get the top_k * 3 candidates to filter out redundancies.
+        # Get the top_k * X candidates to filter out redundancies.
         # Example:
         #      ["multi agent", "agent", "agents", "multi agents", "planning"]
         #      becomes ["multi agent", "planning"]
-        candidate_indices = tfidf_weights.argsort()[-(top_k * 3):][::-1]
+        candidate_indices = tfidf_weights.argsort()[-(top_k * 5):][::-1]
         candidates = [terms[idx] for idx in candidate_indices]
-
-        final_words = []
-        for word in candidates:
-            is_substring = False
-            for other_word in candidates:
-                if word != other_word:
-                    # Checks if 'word' is a substring of 'other_word'
-                    if re.search(r'\b' + re.escape(word) + r'\b', other_word):
-                        is_substring = True
-                        break
-            
-            if not is_substring:
-                final_words.append(word)
-                
-            if len(final_words) >= top_k:
-                break
-        
-        top_words[i] = final_words
+        top_words[i] = remove_substrings(candidates, top_k)
 
     return top_words
