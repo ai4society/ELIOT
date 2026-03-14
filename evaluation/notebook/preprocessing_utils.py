@@ -1,6 +1,6 @@
-
 import re
 from typing import List
+
 import nltk
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
@@ -61,4 +61,3 @@ def preprocess_texts(documents: List[str], use_pos: bool = True) -> List[str]:
     Receives texts and returns preprocessed texts (strings)
     """
     return [clean_and_lemmatize(doc, use_pos=use_pos) for doc in documents]
-
