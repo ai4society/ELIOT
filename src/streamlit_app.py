@@ -23,10 +23,10 @@ from exceptions import (
 def search_papers(
     keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str
 ) -> List[Paper]:
-    import pandas as pd
-    import ast
+    # import pandas as pd
+    # import ast
 
-    # Avoid calling arxiv api for repetitive tests
+    # # Avoid calling arxiv api for repetitive tests
     # df = pd.read_csv(
     #     "../evaluation/datasets/new/papers_20230218-20260218_trustworthy_AI.csv",
     #     parse_dates=["published", "updated"]
@@ -41,7 +41,7 @@ def search_papers(
     #     if isinstance(r["categories"], str):
     #         r["categories"] = ast.literal_eval(r["categories"])
 
-    # return [Paper(**r) for r in records][0:200]
+    # return [Paper(**r) for r in records]
 
     return search(
         keywords=keywords,
@@ -53,9 +53,24 @@ def search_papers(
 
 
 def is_noise_cluster(cid: int) -> bool:
-    """Helper to determine if a cluster ID represents the noise cluster."""
+    """Returns True if cid represents the HDBSCAN noise/uncategorized cluster.
+    After the +1 shift applied in streamlit_app, the noise sentinel (-1) becomes 0.
+    """
     method = st.session_state.get("clustering_method", "Auto-detect clusters")
-    return cid == 1 and method == "Auto-detect clusters"
+    return cid == 0 and method == "Auto-detect clusters"
+
+
+def get_cluster_name(cid: int) -> str:
+    if cid == ALL_PAPERS_TAB_KEY:
+        return "All Papers"
+    return "Uncategorized" if is_noise_cluster(cid) else f"Cluster {cid}"
+
+
+def sort_cluster_ids(cluster_ids: List[int]) -> List[int]:
+    all_papers = [ALL_PAPERS_TAB_KEY] if ALL_PAPERS_TAB_KEY in cluster_ids else []
+    normal_clusters = sorted([c for c in cluster_ids if c > 0])
+    noise_cluster = [c for c in cluster_ids if is_noise_cluster(c)]
+    return all_papers + normal_clusters + noise_cluster
 
 
 def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metrics: dict):
@@ -71,7 +86,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
 
     df_viz = pd.DataFrame({
         "Year": years,
-        "Cluster": [f"Cluster {label}" for label in all_labels],
+        "Cluster": [get_cluster_name(int(label)) for label in all_labels],
         "x": np.array(years) + jitter_x,
         "y": np.array(cluster_nums) + jitter_y,
         "Title": [p.title for p in ordered_papers],
@@ -113,7 +128,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             title="Cluster ID",
             tickmode='array',
             tickvals=sorted(list(set(cluster_nums))),
-            ticktext=[f"Cluster {c}" for c in sorted(list(set(cluster_nums)))],
+            ticktext=[get_cluster_name(c) for c in sorted(list(set(cluster_nums)))],
             showgrid=True,
             gridcolor='rgba(200, 200, 200, 0.2)'
         ),
@@ -146,14 +161,11 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
     return st.plotly_chart(fig, height=height)
 
 
-def build_cluster_color_map(cluster_ids: List[str]):
+def build_cluster_color_map(cluster_ids: List[int]):
     palette = px.colors.qualitative.Plotly
     color_map = {}
     for i, cid in enumerate(cluster_ids):
-        if cid == 0:
-            color_map["All Papers"] = palette[i % len(palette)]
-        else:
-            color_map[f"Cluster {cid}"] = palette[i % len(palette)]
+        color_map[get_cluster_name(cid)] = palette[i % len(palette)]
     return color_map
 
 
@@ -188,6 +200,10 @@ ORDER_BY_OPTIONS = {
 }
 
 DEFAULT_KEYWORDS = "large language models, multi-agent systems"
+
+# Special key for the "All Papers" tab.
+# This is NOT related to HDBSCAN's noise label (-1 pre-shift / 0 post-shift).
+ALL_PAPERS_TAB_KEY = -1
 
 
 # Initialize session state
@@ -276,13 +292,14 @@ if search_button:
                 # Optimal K is for K-Means
                 st.session_state["search_results"]["optimal_k"] = get_optimal_k(papers)
 
-                # Shift clusters by 1 for UI representation
+                # Shift real clusters (0..N-1) to (1..N).
+                # Noise sentinel (-1) becomes 0 after +1 shift.
                 ui_clusters = {k + 1: v for k, v in clusters.items()}
                 ui_top_words = {k + 1: v for k, v in top_words.items()}
 
-            # Add All Papers as Cluster 0
-            ui_clusters[0] = papers
-            ui_top_words[0] = []
+            # Add the "All Papers" tab (shows every paper, no cluster logic)
+            ui_clusters[ALL_PAPERS_TAB_KEY] = papers
+            ui_top_words[ALL_PAPERS_TAB_KEY] = []
             st.session_state["search_results"]["clusters"] = ui_clusters
             st.session_state["search_results"]["top_words"] = ui_top_words
         except (InvalidKeywordError, InvalidDateRangeError, TooManyKeywordsError) as e:
@@ -312,7 +329,7 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
     top_words = st.session_state["search_results"].get("top_words")
 
     # Define this variable here to avoid error when "Show Clusters" is not active
-    cluster_ids = sorted(list(clusters.keys()))
+    cluster_ids = sort_cluster_ids(list(clusters.keys()))
 
     if clustering_active:
 
@@ -358,13 +375,14 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 else:
                     clusters, top_words, metrics = get_papers_kmeans(st.session_state['search_results']['papers'], n_clusters)
 
-                # Shift clusters by 1 for UI representation
+                # Shift clusters numbers (0..N-1) to (1..N).
+                # Noise cluster (-1) becomes 0 after +1 shift.
                 ui_clusters = {k + 1: v for k, v in clusters.items()}
                 ui_top_words = {k + 1: v for k, v in top_words.items()}
 
-                # Add All Papers as Cluster 0
-                ui_clusters[0] = st.session_state['search_results']['papers']
-                ui_top_words[0] = []
+                # Add the "All Papers" tab (shows every paper, no cluster logic)
+                ui_clusters[ALL_PAPERS_TAB_KEY] = st.session_state['search_results']['papers']
+                ui_top_words[ALL_PAPERS_TAB_KEY] = []
 
                 st.session_state["search_results"]["clusters"] = ui_clusters
                 st.session_state["search_results"]["top_words"] = ui_top_words
@@ -376,11 +394,11 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
 
             st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
-            cluster_ids = sorted(list(clusters.keys()))
+            cluster_ids = sort_cluster_ids(list(clusters.keys()))
             color_map = build_cluster_color_map(cluster_ids)
 
-            # Filter out cluster 0 for the top words row since it's the 'All Papers' container
-            display_cluster_ids = [cid for cid in cluster_ids if cid != 0]
+            # Filter out All Papers tab for the top words row
+            display_cluster_ids = [cid for cid in cluster_ids if cid != ALL_PAPERS_TAB_KEY]
 
             # Show top words above the cluster graph
             for row_start in range(0, len(display_cluster_ids), 3):
@@ -391,8 +409,7 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                     with col:
                         badges = ''.join([f"<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>{w}</span>" for w in top_words.get(cid, [])])
 
-                        # The cid will never be 0 here
-                        cluster_label = f"Cluster {cid}"
+                        cluster_label = get_cluster_name(cid)
 
                         if is_noise_cluster(cid):
                             badges = "<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>Uncategorized Papers</span>"
@@ -408,11 +425,11 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                         )
 
             try:
-                # Flatten the clusters to match the dataframe indices
+                # Flatten the clusters to match the dataframe indices (skip All Papers and noise)
                 ordered_papers = []
                 all_labels = []
                 for label, p_list in clusters.items():
-                    if label == 0:
+                    if label in (ALL_PAPERS_TAB_KEY, 0):  # All Papers or Uncategorized
                         continue
                     for paper in p_list:
                         ordered_papers.append(paper)
@@ -431,12 +448,7 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
         st.info("Not enough papers to visualize clusters.")
 
     # Show papers by cluster
-    tab_titles = []
-    for cid in cluster_ids:
-        if cid == 0:
-            tab_titles.append("All Papers")
-        else:
-            tab_titles.append(f"Cluster {cid}")
+    tab_titles = [get_cluster_name(cid) for cid in cluster_ids]
             
     tabs = st.tabs(tab_titles)
 
@@ -451,7 +463,7 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 """
                 paper_count = len(clusters[cluster_id])
 
-                if cluster_id == 0:
+                if cluster_id == ALL_PAPERS_TAB_KEY:
                     # All papers cluster don't have keywords
                     st.markdown(
                         base_html.format(

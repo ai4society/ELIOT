@@ -129,49 +129,38 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         )
         labels = model.fit_predict(X_normalized)
 
-        # Map each HDBSCAN label to the indices of its assigned papers
-        paper_indices_by_label: Dict[int, list] = {}
-        for paper_idx, label in enumerate(labels):
-            paper_indices_by_label.setdefault(label, []).append(paper_idx)
-
         # ------------------------------------------------------------------ #
         # Cluster dictionary construction
         #
-        # Noise points (label == -1) are collected into Cluster 0 so the UI
-        # can display them as "Noise Cluster".
-        # Real clusters are remapped to contiguous IDs starting at 1.
+        # HDBSCAN natively labels noise as -1 and real clusters as 0, 1, 2...
+        # The UI shifts all keys by +1, so real clusters become 1, 2, 3...
+        # and noise (-1) becomes 0.
         # ------------------------------------------------------------------ #
-        noise_indices = paper_indices_by_label.get(-1, [])
-        clusters: Dict[int, list] = {0: [papers[i] for i in noise_indices]}
 
-        # Get the real labels (non-noise) and sort them
-        real_labels = sorted(l for l in paper_indices_by_label if l != -1)
+        # Get the real (non-noise) labels
+        real_labels = sorted(l for l in np.unique(labels) if l != -1)
 
-        # Map the real labels to contiguous cluster IDs starting at 1
-        label_to_cid = {label: (rank + 1) for rank, label in enumerate(real_labels)}
+        # Build clusters dict using native HDBSCAN labels
+        clusters: Dict[int, list] = {}
+        for paper_idx, label in enumerate(labels):
+            clusters.setdefault(int(label), []).append(papers[paper_idx])
 
-        for label in real_labels:
-            cid = label_to_cid[label]
-            clusters[cid] = [papers[i] for i in paper_indices_by_label[label]]
-
-        # Drop any cluster that ended up empty (e.g. empty noise bucket)
+        # Drop any cluster that ended up empty
         clusters = {k: v for k, v in clusters.items() if v}
 
         if model.centroids_ is None or len(model.centroids_) == 0:
             return {0: papers}, {}, _DEFAULT_METRICS
 
-        # Identify the corresponding CIDs (Cluster IDs) for the mapping
-        # real_labels are the original HDBSCAN labels (ex: 0, 1, 2)
-        centroid_cids = [label_to_cid[l] for l in real_labels]
-
+        # top_words: get_top_k_words_ctfidf returns a list indexed 0..K-1,
+        # one entry per real cluster in sorted label order.
         raw_top_words = get_top_k_words_ctfidf(
             papers, real_labels, top_k=3
         )
 
-        # Build the final top_words dictionary mapping to their CIDs (1..K)
-        top_words = {cid: raw_top_words[i] for i, cid in enumerate(centroid_cids)}
+        # Map each real cluster label directly to its top words
+        top_words: Dict[int, list] = {label: raw_top_words[i] for i, label in enumerate(real_labels)}
         # Noise cluster has no top words
-        top_words[0] = []
+        top_words[-1] = []
 
         # Metrics (evaluated on non-noise points only)
         non_noise_mask = labels != -1
@@ -189,14 +178,8 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
 
         noise_ratio = float(np.mean(labels == -1))
 
-        # Build a per-paper label array that uses cluster IDs (not raw HDBSCAN
-        # labels)
-        plot_labels = np.zeros(len(papers), dtype=int)
-        for label in real_labels:
-            plot_labels[paper_indices_by_label[label]] = label_to_cid[label]
-
         # TODO remove this for deployment
-        plot_clusters_umap(is_hdbscan=True, X=X_normalized, labels=plot_labels)
+        plot_clusters_umap(is_hdbscan=True, X=X_normalized, labels=labels)
 
         print(f"HDBSCAN Clustering: {len(clusters)} clusters (including noise)")
         print(f"Metrics: {metrics}")
@@ -224,7 +207,7 @@ def plot_clusters_umap(is_hdbscan, X, labels, save_path="clusters_umap.png"):
 
     for cluster in np.unique(labels):
         mask = labels == cluster
-        legend_label = "Noise" if (cluster == 0 and is_hdbscan) else f"Cluster {cluster + 1}"
+        legend_label = "Noise" if (cluster == -1 and is_hdbscan) else f"Cluster {cluster + 1}"
         plt.scatter(
             X_2d[mask, 0],
             X_2d[mask, 1],
