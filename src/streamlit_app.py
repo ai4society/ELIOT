@@ -9,13 +9,19 @@ import plotly.express as px
 import streamlit as st
 
 from arxiv_searcher import ARXIV_CATEGORIES, Paper, search
-from ml.ml_utils import MIN_PAPERS_FOR_CLUSTERING, MAX_NUMBER_OF_CLUSTERS, get_optimal_k, get_papers_kmeans, get_paper_clusters_hdbscan
 from exceptions import (
+    ArxivFetchingError,
     ArxivSearcherError,
-    InvalidKeywordError,
     InvalidDateRangeError,
+    InvalidKeywordError,
     TooManyKeywordsError,
-    ArxivFetchingError
+)
+from ml.ml_utils import (
+    MAX_NUMBER_OF_CLUSTERS,
+    MIN_PAPERS_FOR_CLUSTERING,
+    get_optimal_k,
+    get_paper_clusters_hdbscan,
+    get_papers_clusters_agglomerative,
 )
 
 
@@ -23,33 +29,33 @@ from exceptions import (
 def search_papers(
     keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str
 ) -> List[Paper]:
-    # import pandas as pd
-    # import ast
+    import pandas as pd
+    import ast
 
-    # # Avoid calling arxiv api for repetitive tests
-    # df = pd.read_csv(
-    #     "../evaluation/datasets/new/papers_20230218-20260218_trustworthy_AI.csv",
-    #     parse_dates=["published", "updated"]
-    # )
-
-    # records = df.to_dict("records")
-
-    # for r in records:
-    #     if isinstance(r["authors"], str):
-    #         r["authors"] = ast.literal_eval(r["authors"])
-
-    #     if isinstance(r["categories"], str):
-    #         r["categories"] = ast.literal_eval(r["categories"])
-
-    # return [Paper(**r) for r in records]
-
-    return search(
-        keywords=keywords,
-        start_date=start_date,
-        end_date=end_date,
-        sort_by=sort_opt,
-        category=category_option,
+    # Avoid calling arxiv api for repetitive tests
+    df = pd.read_csv(
+        "../evaluation/datasets/new/papers_20230218-20260218_trustworthy_AI.csv",
+        parse_dates=["published", "updated"]
     )
+
+    records = df.to_dict("records")
+
+    for r in records:
+        if isinstance(r["authors"], str):
+            r["authors"] = ast.literal_eval(r["authors"])
+
+        if isinstance(r["categories"], str):
+            r["categories"] = ast.literal_eval(r["categories"])
+
+    return [Paper(**r) for r in records]
+
+    # return search(
+    #     keywords=keywords,
+    #     start_date=start_date,
+    #     end_date=end_date,
+    #     sort_by=sort_opt,
+    #     category=category_option,
+    # )
 
 
 def is_noise_cluster(cid: int) -> bool:
@@ -176,7 +182,9 @@ def get_default_session_state():
         "clusters": {}, 
         "top_words": {}, 
         "metrics": {}, 
-        "optimal_k": 1
+        "optimal_k": 1,
+        "show_optimal_k": True,
+        "show_all_clusters": False,
     }
 
 
@@ -213,7 +221,7 @@ if "search_results" not in st.session_state:
 st.title("Paper Discovery", anchor=False)
 
 st.markdown(
-    '<div class="page-subtitle">Discover and explore research papers across the arXiv using keyword-based search</div>',
+    "<div class='page-subtitle'>Discover and explore trends in research papers across ArXiv</div>",
     unsafe_allow_html=True,
 )
 
@@ -222,7 +230,7 @@ col_keywords, col_category = st.columns([2.5, 1])
 with col_keywords:
     keywords = st.text_input(
         "Search Keywords or Phrases",
-        placeholder=f"e.g., {DEFAULT_KEYWORDS} ...",
+        placeholder=f"{DEFAULT_KEYWORDS}",
         help=(
             "Enter one or more keywords or phrases separated by commas. "
             "Results include only papers where all keywords are present. "
@@ -289,7 +297,6 @@ if search_button:
             if len(papers) >= MIN_PAPERS_FOR_CLUSTERING:
                 clusters, top_words, metrics = get_paper_clusters_hdbscan(papers)
                 st.session_state["search_results"]["metrics"] = metrics
-                # Optimal K is for K-Means
                 st.session_state["search_results"]["optimal_k"] = get_optimal_k(papers)
 
                 # Shift real clusters (0..N-1) to (1..N).
@@ -355,7 +362,9 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 cluster_button = st.button("Cluster")
 
             if method == "Specify number of clusters":
-                st.toast(f"Based on our analysis, the optimal number of clusters is {st.session_state['search_results']['optimal_k']}.", duration="short", icon="💡")
+                if st.session_state["search_results"]["show_optimal_k"]:
+                    st.toast(f"Based on our analysis, the optimal number of clusters is {st.session_state['search_results']['optimal_k']}.", duration="short", icon="💡")
+                    st.session_state["search_results"]["show_optimal_k"] = False
 
                 col_slider, _ = st.columns([0.6, 0.7]) 
                 with col_slider:
@@ -373,7 +382,7 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 if method == "Auto-detect clusters":
                     clusters, top_words, metrics = get_paper_clusters_hdbscan(st.session_state['search_results']['papers'])
                 else:
-                    clusters, top_words, metrics = get_papers_kmeans(st.session_state['search_results']['papers'], n_clusters)
+                    clusters, top_words, metrics = get_papers_clusters_agglomerative(st.session_state['search_results']['papers'], n_clusters)
 
                 # Shift clusters numbers (0..N-1) to (1..N).
                 # Noise cluster (-1) becomes 0 after +1 shift.
@@ -387,6 +396,8 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 st.session_state["search_results"]["clusters"] = ui_clusters
                 st.session_state["search_results"]["top_words"] = ui_top_words
                 st.session_state["search_results"]["metrics"] = metrics
+                # Reset the "show more" state whenever a new clustering run is triggered
+                st.session_state["search_results"]["show_all_clusters"] = False
 
                 # Update local variables so the immediate render correctly uses 1..N instead of 0..N-1
                 clusters = ui_clusters
@@ -397,33 +408,62 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
             cluster_ids = sort_cluster_ids(list(clusters.keys()))
             color_map = build_cluster_color_map(cluster_ids)
 
-            # Filter out All Papers tab for the top words row
+            # Filter out "All Papers" tab for the top words row
             display_cluster_ids = [cid for cid in cluster_ids if cid != ALL_PAPERS_TAB_KEY]
 
+            # By default, to avoid visual clutter, only the top `optimal_k` clusters and their keywords are shown.
+            # If the user clicks "Show All", this limitation is removed and all detected clusters will be rendered.
+            optimal_k = st.session_state["search_results"].get("optimal_k")
+            show_all = st.session_state["search_results"].get("show_all_clusters")
+
+            if not show_all:
+                visible_cluster_ids = [cid for cid in display_cluster_ids if not is_noise_cluster(cid)][:optimal_k]
+            else:
+                visible_cluster_ids = display_cluster_ids
+
             # Show top words above the cluster graph
-            for row_start in range(0, len(display_cluster_ids), 3):
-                row_ids = display_cluster_ids[row_start:row_start + 3]
+            for row_start in range(0, len(visible_cluster_ids), 3):
+                row_ids = visible_cluster_ids[row_start:row_start + 3]
                 cols = st.columns(3)
                 
                 for col, cid in zip(cols, row_ids):
                     with col:
                         badges = ''.join([f"<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>{w}</span>" for w in top_words.get(cid, [])])
-
                         cluster_label = get_cluster_name(cid)
-
                         if is_noise_cluster(cid):
                             badges = "<span class='cluster-keyword-badge' style='font-size:0.65rem; padding:0.1rem 0.4rem;'>Uncategorized Papers</span>"
                         
-                        cluster_color = color_map.get(cluster_label, "var(--uofsc-garnet)")
+                        cluster_color = color_map.get(cluster_label)
 
                         st.markdown(
-                            f"<div style='display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.3rem;'>"
+                            f"<div style='display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;'>"
                             f"<span style='font-size:0.75rem; font-weight:700; color:{cluster_color};'>{cluster_label}</span>"
                             f"{badges}"
                             f"</div>",
                             unsafe_allow_html=True
                         )
 
+            # Show All / Show less toggle
+            total_valid_clusters = len([cid for cid in display_cluster_ids if not is_noise_cluster(cid)])
+            visible_valid_clusters = len([cid for cid in visible_cluster_ids if not is_noise_cluster(cid)])
+            needs_toggle = total_valid_clusters > optimal_k
+
+            if needs_toggle:
+                toggle_label = f"Show All" if not show_all else "Show Less"
+
+                st.markdown(
+                    f"""
+                    <div style='margin-top: 0.8rem;'></div>
+                    <div style="font-size:0.9rem; margin-bottom:0.07rem;">
+                    Showing {visible_valid_clusters} of {total_valid_clusters} clusters
+                    </div>
+                """, unsafe_allow_html=True
+                )
+
+                if st.button(toggle_label, key="toggle_clusters"):
+                    st.session_state["search_results"]["show_all_clusters"] = not show_all
+                    st.rerun()
+ 
             try:
                 # Flatten the clusters to match the dataframe indices (skip All Papers and noise)
                 ordered_papers = []
@@ -449,7 +489,6 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
 
     # Show papers by cluster
     tab_titles = [get_cluster_name(cid) for cid in cluster_ids]
-            
     tabs = st.tabs(tab_titles)
 
     for tab, cluster_id in zip(tabs, cluster_ids):
