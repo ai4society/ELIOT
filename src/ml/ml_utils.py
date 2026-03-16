@@ -6,7 +6,7 @@ import numpy as np
 import skfuzzy as fuzz
 import streamlit as st
 from kneed import KneeLocator
-from sklearn.cluster import HDBSCAN, KMeans
+from sklearn.cluster import AgglomerativeClustering, HDBSCAN, KMeans
 from sklearn.metrics import (
     calinski_harabasz_score,
     davies_bouldin_score,
@@ -16,31 +16,31 @@ from umap import UMAP
 
 from arxiv_searcher import Paper
 from .preprocessing import (
-    get_top_k_words,
+    embed_and_reduce,
+    get_cluster_keywords,
     preprocess_texts,
-    get_top_k_words_ctfidf,
 )
 
 MIN_PAPERS_FOR_CLUSTERING = 15
 MAX_NUMBER_OF_CLUSTERS = 15
 _DEFAULT_METRICS = {"SIL": 0, "DBI": 0, "CHI": 0}
 
-
 @st.cache_resource(show_spinner=False)
 def get_optimal_k(papers: List[Paper]) -> int:
     """
-    Find the optimal number of clusters for K-Means clustering
-    using the elbow method on Inertia.
+    Find the optimal number of clusters using the elbow method
+    on the K-means inertia curve.
     """
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
         return 1
 
     try:
-        X_normalized = preprocess_texts(papers)
+        X_cleaned = preprocess_texts(papers)
+        X_normalized = embed_and_reduce(X_cleaned)
         K_range = range(2, MAX_NUMBER_OF_CLUSTERS)
         inertias = []
         for k in K_range:
-            kmeans_temp = KMeans(n_clusters=k, random_state=42, init="k-means++", n_init=1, max_iter=300)
+            kmeans_temp = KMeans(n_clusters=k, random_state=42, init="k-means++", max_iter=300)
             kmeans_temp.fit(X_normalized)
             score = kmeans_temp.inertia_
             inertias.append(score)
@@ -48,16 +48,14 @@ def get_optimal_k(papers: List[Paper]) -> int:
         knee_locator = KneeLocator(list(K_range), inertias, curve="convex", direction="decreasing")
         # If no knee is found, return 2 as default
         n_clusters = int(knee_locator.knee) if knee_locator.knee else 2
-
         return n_clusters
-        
     except Exception as e:
         logging.error(f"Optimal K error: {e}")
         return 1
 
 
-#@st.cache_resource(show_spinner=False)
-def get_papers_kmeans(papers: List[Paper], n_clusters: int = 5):
+@st.cache_resource(show_spinner=False)
+def get_papers_clusters_agglomerative(papers: List[Paper], n_clusters: int = 5):
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
         return {0: papers}, {}, _DEFAULT_METRICS
 
@@ -65,23 +63,15 @@ def get_papers_kmeans(papers: List[Paper], n_clusters: int = 5):
         n_clusters = MAX_NUMBER_OF_CLUSTERS
 
     try:
-        X_normalized = preprocess_texts(papers)
-        model = KMeans(n_clusters=n_clusters, random_state=42, init="k-means++", n_init=1, max_iter=300)
+        X_cleaned = preprocess_texts(papers)
+        X_normalized = embed_and_reduce(X_cleaned)
+        model = AgglomerativeClustering(
+            n_clusters=n_clusters, metric="cosine", linkage="average"
+        )
         labels = model.fit_predict(X_normalized)
-
-        # TODO remove this for deployment
-        # plot_clusters_umap(is_hdbscan=False, X=X_normalized, labels=labels)
-
-        clusters: Dict[int, list] = {i: [] for i in range(n_clusters)}
         
-        for paper_idx, paper in enumerate(papers):
-            clusters[int(labels[paper_idx])].append(paper)
-            
-        # Drop clusters that ended up empty
-        clusters = {k: v for k, v in clusters.items() if v}
-
-        top_clusters_words = get_top_k_words_ctfidf(
-            papers, labels, top_k=4
+        top_keywords = get_cluster_keywords(
+            X_cleaned, labels, top_k=4
         )
 
         if len(np.unique(labels)) >= 2:
@@ -93,15 +83,22 @@ def get_papers_kmeans(papers: List[Paper], n_clusters: int = 5):
         else:
             metrics = _DEFAULT_METRICS
 
-        print(f"K-Means Clustering: {len(clusters)} clusters")
+        clusters: Dict[int, list] = {i: [] for i in range(n_clusters)}
+        
+        for paper_idx, paper in enumerate(papers):
+            clusters[int(labels[paper_idx])].append(paper)
+
+        # TODO remove this for deployment
+        #plot_clusters_umap(is_hdbscan=False, X=X_normalized, labels=labels)
+
+        print(f"Agglomerative Clustering: {len(clusters)} clusters")
         print(f"Metrics: {metrics}")
-        print(top_clusters_words)
+        print(top_keywords)
         print("=" * 50 + "\n")
 
-        return dict(sorted(clusters.items())), top_clusters_words, metrics
-
+        return dict(sorted(clusters.items())), top_keywords, metrics
     except Exception as e:
-        logging.error(f"K-Means Clustering error: {e}")
+        logging.error(f"Agglomerative Clustering error: {e}")
         return {0: papers}, {}, _DEFAULT_METRICS
 
 
@@ -120,10 +117,9 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         return {0: papers}, {}, _DEFAULT_METRICS
 
     try:
-        X_normalized = preprocess_texts(papers)
+        X_cleaned = preprocess_texts(papers)
+        X_normalized = embed_and_reduce(X_cleaned)
         model = HDBSCAN(
-            min_samples=1,
-            cluster_selection_epsilon=0.2,
             metric="euclidean",
             store_centers="centroid",
         )
@@ -137,9 +133,6 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         # and noise (-1) becomes 0.
         # ------------------------------------------------------------------ #
 
-        # Get the real (non-noise) labels
-        real_labels = sorted(l for l in np.unique(labels) if l != -1)
-
         # Build clusters dict using native HDBSCAN labels
         clusters: Dict[int, list] = {}
         for paper_idx, label in enumerate(labels):
@@ -151,16 +144,9 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         if model.centroids_ is None or len(model.centroids_) == 0:
             return {0: papers}, {}, _DEFAULT_METRICS
 
-        # top_words: get_top_k_words_ctfidf returns a list indexed 0..K-1,
-        # one entry per real cluster in sorted label order.
-        raw_top_words = get_top_k_words_ctfidf(
-            papers, real_labels, top_k=3
-        )
-
-        # Map each real cluster label directly to its top words
-        top_words: Dict[int, list] = {label: raw_top_words[i] for i, label in enumerate(real_labels)}
-        # Noise cluster has no top words
-        top_words[-1] = []
+        # Extract keywords only for real (non-noise) points.
+        top_words: Dict[int, list] = get_cluster_keywords(X_cleaned, labels, top_k=3)
+        top_words[-1] = []  # noise cluster has no representative keywords
 
         # Metrics (evaluated on non-noise points only)
         non_noise_mask = labels != -1
@@ -179,7 +165,7 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         noise_ratio = float(np.mean(labels == -1))
 
         # TODO remove this for deployment
-        plot_clusters_umap(is_hdbscan=True, X=X_normalized, labels=labels)
+        #plot_clusters_umap(is_hdbscan=True, X=X_normalized, labels=labels)
 
         print(f"HDBSCAN Clustering: {len(clusters)} clusters (including noise)")
         print(f"Metrics: {metrics}")
@@ -193,12 +179,9 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
 
 
 def plot_clusters_umap(is_hdbscan, X, labels, save_path="clusters_umap.png"):
-    K = len(np.unique(labels))
-    n_neighbors = max(2, min(X.shape[0] - 1, X.shape[0] // K))
-
     reducer = UMAP(
         n_components=2,
-        n_neighbors=n_neighbors,
+        n_neighbors=15,
         random_state=42,
     )
     X_2d = reducer.fit_transform(X)

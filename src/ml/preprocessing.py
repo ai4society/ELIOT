@@ -1,24 +1,23 @@
 import re
-from typing import Dict, List
+from typing import List
 
 import nltk
+import numpy as np
+from bertopic.vectorizers import ClassTfidfTransformer
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
-from sklearn.decomposition import TruncatedSVD
-from sklearn.feature_extraction import text
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import normalize
-
-from bertopic.vectorizers import ClassTfidfTransformer
-
-import numpy as np
+from umap import UMAP
 
 from arxiv_searcher import Paper
 
 
 _LEMMATIZER = WordNetLemmatizer()
-VECTORIZER = TfidfVectorizer(min_df=3, max_df=0.7, max_features=3000, ngram_range=(1, 3), stop_words="english")
-SVD = TruncatedSVD(n_components=5, random_state=42)
+MODEL = SentenceTransformer("all-MiniLM-L6-v2")
+DIMENSIONALITY_REDUCER = UMAP(n_neighbors=15, n_components=10, metric="cosine", random_state=42)
+CLASS_BASED_TFIDF = ClassTfidfTransformer()
 
 resources = [
     ("corpora/wordnet", "wordnet"),
@@ -31,6 +30,12 @@ for path, pkg in resources:
         nltk.data.find(path)
     except LookupError:
         nltk.download(pkg)
+
+
+def embed_and_normalize(texts):
+    X = MODEL.encode(texts, show_progress_bar=False)
+    X = normalize(X, norm="l2")
+    return X
 
 
 def get_wordnet_pos(treebank_tag: str):
@@ -64,61 +69,76 @@ def clean_and_lemmatize(text: str) -> str:
     return " ".join(lemmas)
 
 
-def preprocess_texts(papers: List[Paper]):
-    """
-    Receives texts and returns preprocessed texts (strings)
-    """
-    clean_text = [clean_and_lemmatize(doc) for doc in [p.title + " " + p.abstract for p in papers]]
-    
-    X = VECTORIZER.fit_transform(clean_text)
-    X = SVD.fit_transform(X)
-    X = normalize(X, norm="l2")
+def preprocess_texts(papers: List[Paper]) -> List[str]:
+    """Cleans and lemmatizes texts. Returns preprocessed strings."""
+    return [clean_and_lemmatize(doc) for doc in [p.title + " " + p.abstract for p in papers]]
 
+
+def embed_and_reduce(cleaned_texts: List[str]) -> np.ndarray:
+    """Embeds texts and reduces dimensionality for clustering."""
+    X = embed_and_normalize(cleaned_texts)
+    X = DIMENSIONALITY_REDUCER.fit_transform(X)
     return X
 
 
-def _remove_substrings(candidates: List[str], top_k: int):
+def _remove_substrings(candidates: List[str], top_k: int) -> List[str]:
     """
-    Filter a ranked list of n-gram candidates by removing entries that are
-    substrings of (or contain) another candidate, then return the top_k survivors.
+    Filter a ranked list of n-gram candidates by removing entries that are 
+    strictly substrings of another longer candidate, preserving the most 
+    specific terms. Returns the top_k survivors.
 
     Example:
         ["neural network", "network", "deep neural network", "learning"]
-        -> ["neural network", "learning"]  (with top_k=2)
+        -> ["deep neural network", "learning"]  (with top_k=2)
     """
     final = []
     for word in candidates:
         is_substring = any(
-            word != other and (word in other or other in word)
-            for other in candidates
+            word != other and word in other for other in candidates
         )
         if not is_substring:
             final.append(word)
+
         if len(final) >= top_k:
             break
+
     return final
 
 
-def get_top_k_words_ctfidf(papers, labels, top_k=3):
-    texts = [clean_and_lemmatize(p.title + " " + p.abstract) for p in papers]
-    unique_labels = sorted(set(labels))
+def get_cluster_keywords(cleaned_texts: List[str], labels: List[int], top_k: int = 4) -> dict:
+    """
+    Extracts the top-k representative n-gram keywords for each cluster using c-TF-IDF.
+
+    Expects the same preprocessed texts used for clustering (output of `preprocess_texts`),
+
+    Args:
+        cleaned_texts: List of lemmatized/cleaned text strings, one per document.
+                     Must be the same texts used to produce the cluster `labels`.
+        labels:      Cluster label for each document (same order as `cleaned_texts`).
+        top_k:       Number of top keywords to return per cluster. Defaults to 4.
+
+    Returns:
+        A dict mapping each unique label to a list of up to `top_k` keyword strings.
+        Example: {0: ["neural network", "deep learning"], 1: ["image segmentation"]}
+    """
+    labels = np.asarray(labels)
+    unique_labels = sorted(set(labels.tolist()))
 
     super_docs = [
-        " ".join(texts[i] for i in np.where(labels == lbl)[0])
+        " ".join(cleaned_texts[i] for i in np.where(labels == lbl)[0])
         for lbl in unique_labels
     ]
 
     vectorizer = CountVectorizer(
         stop_words="english",
+        max_features=3000,
         max_df=0.7,
         ngram_range=(2, 3),
-        max_features=3000
     )
-    ctfidf_model = ClassTfidfTransformer()
 
     X_counts = vectorizer.fit_transform(super_docs)
 
-    X_ctfidf = ctfidf_model.fit_transform(X_counts)
+    X_ctfidf = CLASS_BASED_TFIDF.fit_transform(X_counts)
     feature_names = vectorizer.get_feature_names_out()
     top_words = {}
 
@@ -127,32 +147,9 @@ def get_top_k_words_ctfidf(papers, labels, top_k=3):
         ranked_indices = scores.argsort()[::-1]
         candidates = [
             feature_names[j]
-            # Get the top_k * X candidates to filter out redundancies.
-            # Example:
-            #      ["multi agent", "agent", "agents", "multi agents", "planning"]
-            #      becomes ["multi agent", "planning"]
-            for j in ranked_indices[: top_k * 6]
+            for j in ranked_indices[: top_k * 10]
             if scores[j] > 0
         ]
         top_words[lbl] = _remove_substrings(candidates, top_k)
-
-    return top_words
-
-
-def get_top_k_words(cntr_svd, top_k=3):
-    terms = VECTORIZER.get_feature_names_out()
-    top_words = {}
-
-    for i in range(cntr_svd.shape[0]):
-        # Reconstructs the weights in the original TF-IDF space
-        tfidf_weights = SVD.inverse_transform(cntr_svd[i].reshape(1, -1)).ravel()
-
-        # Get the top_k * X candidates to filter out redundancies.
-        # Example:
-        #      ["multi agent", "agent", "agents", "multi agents", "planning"]
-        #      becomes ["multi agent", "planning"]
-        candidate_indices = tfidf_weights.argsort()[-(top_k * 5):][::-1]
-        candidates = [terms[idx] for idx in candidate_indices]
-        top_words[i] = remove_substrings(candidates, top_k)
 
     return top_words
