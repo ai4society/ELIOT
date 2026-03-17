@@ -1383,7 +1383,7 @@ wheels = [
 ]
 
 [[package]]
-name = "paper-discovery"
+name = "paper-searcher"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
