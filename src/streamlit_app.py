@@ -417,7 +417,7 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
             show_all = st.session_state["search_results"].get("show_all_clusters")
 
             if not show_all:
-                visible_cluster_ids = [cid for cid in display_cluster_ids if not is_noise_cluster(cid)][:optimal_k]
+                visible_cluster_ids = display_cluster_ids[:optimal_k]
             else:
                 visible_cluster_ids = display_cluster_ids
 
@@ -443,19 +443,17 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                             unsafe_allow_html=True
                         )
 
-            # Show All / Show less toggle
-            total_valid_clusters = len([cid for cid in display_cluster_ids if not is_noise_cluster(cid)])
-            visible_valid_clusters = len([cid for cid in visible_cluster_ids if not is_noise_cluster(cid)])
-            needs_toggle = total_valid_clusters > optimal_k
+            total_clusters = len(display_cluster_ids)
 
-            if needs_toggle:
+            # Show All / Show less toggle
+            if total_clusters > optimal_k:
                 toggle_label = f"Show All" if not show_all else "Show Less"
 
                 st.markdown(
                     f"""
                     <div style='margin-top: 0.8rem;'></div>
                     <div style="font-size:0.9rem; margin-bottom:0.07rem;">
-                    Showing {visible_valid_clusters} of {total_valid_clusters} clusters
+                    Showing {len(visible_cluster_ids)} of {total_clusters} clusters
                     </div>
                 """, unsafe_allow_html=True
                 )
