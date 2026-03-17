@@ -29,26 +29,6 @@ from ml.ml_utils import (
 def search_papers(
     keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str
 ) -> List[Paper]:
-    # import pandas as pd
-    # import ast
-
-    # # Avoid calling arxiv api for repetitive tests
-    # df = pd.read_csv(
-    #     "../evaluation/datasets/new/papers_20230218-20260218_trustworthy_AI.csv",
-    #     parse_dates=["published", "updated"]
-    # )
-
-    # records = df.to_dict("records")
-
-    # for r in records:
-    #     if isinstance(r["authors"], str):
-    #         r["authors"] = ast.literal_eval(r["authors"])
-
-    #     if isinstance(r["categories"], str):
-    #         r["categories"] = ast.literal_eval(r["categories"])
-
-    # return [Paper(**r) for r in records]
-
     return search(
         keywords=keywords,
         start_date=start_date,
