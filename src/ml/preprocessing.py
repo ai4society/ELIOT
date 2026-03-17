@@ -3,6 +3,8 @@ from typing import List
 
 import nltk
 import numpy as np
+import streamlit as st
+import logging
 from bertopic.vectorizers import ClassTfidfTransformer
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
@@ -15,25 +17,42 @@ from arxiv_searcher import Paper
 
 
 _LEMMATIZER = WordNetLemmatizer()
-MODEL = SentenceTransformer("all-MiniLM-L6-v2")
-DIMENSIONALITY_REDUCER = UMAP(n_neighbors=15, n_components=10, metric="cosine", random_state=42)
-CLASS_BASED_TFIDF = ClassTfidfTransformer()
 
-resources = [
-    ("corpora/wordnet", "wordnet"),
-    ("corpora/omw-1.4", "omw-1.4"),
-    ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng"),
-    ("tokenizers/punkt", "punkt"),
-]
-for path, pkg in resources:
+@st.cache_resource(show_spinner=False)
+def load_nltk_resources():
+    logging.info("Checking and downloading required NLTK resources...")
+    resources = [
+        ("corpora/wordnet", "wordnet"),
+        ("corpora/omw-1.4", "omw-1.4"),
+        ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng"),
+        ("tokenizers/punkt", "punkt"),
+    ]
+    for path, pkg in resources:
+        try:
+            nltk.data.find(path)
+        except LookupError:
+            nltk.download(pkg)
+
+load_nltk_resources()
+
+
+@st.cache_resource(show_spinner=False)
+def get_sentence_model():
+    logging.info("Loading SentenceTransformer model 'all-MiniLM-L6-v2'...")
+    # Limit PyTorch threads to avoid Streamlit Cloud Out-of-Memory (OOM) errors 
+    # when handling multiple concurrent users
     try:
-        nltk.data.find(path)
-    except LookupError:
-        nltk.download(pkg)
+        import torch
+        torch.set_num_threads(1)
+    except ImportError:
+        logging.warning("PyTorch not found or torch.set_num_threads failed. Running without thread limits.")
+        pass
+    return SentenceTransformer("all-MiniLM-L6-v2")
 
 
 def embed_and_normalize(texts):
-    X = MODEL.encode(texts, show_progress_bar=False)
+    model = get_sentence_model()
+    X = model.encode(texts, show_progress_bar=False)
     X = normalize(X, norm="l2")
     return X
 
@@ -71,13 +90,15 @@ def clean_and_lemmatize(text: str) -> str:
 
 def preprocess_texts(papers: List[Paper]) -> List[str]:
     """Cleans and lemmatizes texts. Returns preprocessed strings."""
+    logging.info(f"Preprocessing & Lemmatizing {len(papers)} papers...")
     return [clean_and_lemmatize(doc) for doc in [p.title + " " + p.abstract for p in papers]]
 
 
 def embed_and_reduce(cleaned_texts: List[str]) -> np.ndarray:
     """Embeds texts and reduces dimensionality for clustering."""
     X = embed_and_normalize(cleaned_texts)
-    X = DIMENSIONALITY_REDUCER.fit_transform(X)
+    reducer = UMAP(n_neighbors=15, n_components=10, metric="cosine", random_state=42)
+    X = reducer.fit_transform(X)
     return X
 
 
@@ -138,7 +159,8 @@ def get_cluster_keywords(cleaned_texts: List[str], labels: List[int], top_k: int
 
     X_counts = vectorizer.fit_transform(super_docs)
 
-    X_ctfidf = CLASS_BASED_TFIDF.fit_transform(X_counts)
+    ctfidf_transformer = ClassTfidfTransformer()
+    X_ctfidf = ctfidf_transformer.fit_transform(X_counts)
     feature_names = vectorizer.get_feature_names_out()
     top_words = {}
 

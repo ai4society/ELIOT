@@ -1,9 +1,8 @@
-import argparse
 from dataclasses import dataclass
 import json
 import logging
 import os
-from datetime import date, datetime
+from datetime import datetime
 from typing import List
 
 import arxiv
@@ -98,10 +97,11 @@ def build_arxiv_query(keywords: List[str], category: str = "cs") -> Query:
         kw = kw.strip()
         if not kw:
             continue
-        # (ti:kw OR abs:kw)
+
         try:
             clause = Query.title(kw) | Query.abstract(kw)
         except ValueError:
+            logging.warning(f"Skipping malformed keyword: '{kw}'")
             raise InvalidKeywordError("Keyword with double quotes or parentheses are not allowed.")
         
         if keyword_query is None:
@@ -138,7 +138,11 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
     if len(keywords) > MAXIMUM_KEYWORDS_ALLOWED:
         raise TooManyKeywordsError(f"Too many keywords provided ({len(keywords)}). Maximum allowed is {MAXIMUM_KEYWORDS_ALLOWED}.")
 
-    client = arxiv.Client()
+    client = arxiv.Client(
+        page_size=100,
+        delay_seconds=3,
+        num_retries=3
+    )
     query = build_arxiv_query(keywords=keywords, category=category)
 
     # Add date filtering
@@ -147,36 +151,12 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
     logging.info(f"Keywords for filtering: {keywords}")
     logging.info(f"Date Range: {start_date} - {end_date}")
     logging.info(f"Query being used: {query}\n")
-    print(f"Query being used: {query}\n")
 
     search = arxiv.Search(
         query=str(query), 
         max_results=300, 
         sort_by=arxiv.SortCriterion.Relevance if sort_by == "relevance" else arxiv.SortCriterion.SubmittedDate
     )
-
-    #'arxiv_id', 'authors', 'updated', 'pdf_link', 'main_category', and 'categories'
-    # temp = [
-    #     [
-    #         result.get_short_id(),
-    #         [a.name for a in result.authors],
-    #         result.updated,
-    #         result.pdf_url,
-    #         categories_by_id[result.primary_category].name,
-    #         [categories_by_id[cat].name for cat in result.categories],
-    #         result.title,
-    #         result.summary,
-    #         result.published,
-    #         result.entry_id
-    #     ]
-    #     for result in client.results(search)
-    # ]
-
-    # df = pd.DataFrame(temp, columns=["arxiv_id", "authors", "updated", "pdf_link", "main_category", "categories", "title", "abstract", "published", "link"])
-    # ano_query = str(query).replace(" ", "_")
-    # query_keywords = "_".join([kw.replace(" ", "_") for kw in keywords])
-    # query_date_range = f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}"
-    # df.to_csv(f"papers_{query_date_range}_{query_keywords}.csv", index=False)
 
     try:
         return [
@@ -198,67 +178,3 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
     except Exception as e:
        logging.error("Error getting results: %s", e)
        raise ArxivFetchingError("Error fetching papers")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Test local arXiv search extraction.")
-
-    parser.add_argument(
-        "--keywords",
-        type=str,
-        default=None,
-        help="Comma-separated keywords for filtering (e.g., 'planning,PDDL').",
-    )
-
-    parser.add_argument(
-        "--category",
-        type=str,
-        choices=ARXIV_CATEGORIES.keys(),
-        help="ArXiv categories",
-    )
-
-    parser.add_argument(
-        "--start_date",
-        type=str,
-        default="2024-01-01",
-        help="Start date in YYYY-MM-DD format.",
-    )
-
-    parser.add_argument(
-        "--end_date",
-        type=str,
-        default=None,
-        help="End date in YYYY-MM-DD format.",
-    )
-
-    parser.add_argument(
-        "--sort_by",
-        type=str,
-        default="relevance",
-        choices=["relevance", "submitted"],
-        help="Sorting method for arXiv results.",
-    )
-
-    args = parser.parse_args()
-
-    end_date = args.end_date if args.end_date is not None else str(date.today())
-
-    results = search(
-        keywords=args.keywords,
-        start_date=datetime.strptime(args.start_date, "%Y-%m-%d").date(),
-        end_date=datetime.strptime(end_date, "%Y-%m-%d").date(),
-        sort_by=args.sort_by,
-        category=args.category
-    )
-
-    for i in range(len(results)):
-        if i >= 5:
-            break
-        paper = results[i]
-        print(f"[{i+1}] {paper.arxiv_id} - {paper.title}")
-        print(f"Authors: {', '.join(paper.authors)}")
-        print(paper.abstract)
-        print()
-
-    print()
-    print(f"Total papers found: {len(results)}")

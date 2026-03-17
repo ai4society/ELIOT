@@ -288,6 +288,7 @@ if search_button:
                 sort_opt=sort_option.lower(),
                 category_option=category_option,
             )
+            logging.info(f"Search successful: found {len(papers)} papers for keywords '{keywords}' in category '{category_option}'")
 
             st.session_state["search_results"]["searched"] = True
             st.session_state["search_results"]["papers"] = papers
@@ -314,10 +315,10 @@ if search_button:
             logging.error(f"Input error: {str(e)}")
         except ArxivFetchingError as e:
             st.warning("We couldn't fetch papers right now. Please try again in a few minutes.")
-            logging.error(f"Fetching error: {str(e)}")
+            logging.error(f"ArXiv Fetching Error details: {str(e)}")
         except Exception as e:
             st.error("⚠️ An unexpected error occurred")
-            logging.error(f"Unexpected error: {str(e)}")
+            logging.error(f"Unexpected Streamlit error in main loop: {str(e)}", exc_info=True)
 
 if st.session_state["search_results"]["searched"] and st.session_state["search_results"]["papers"]:
     papers = st.session_state["search_results"]["papers"]

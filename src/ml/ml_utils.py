@@ -1,9 +1,7 @@
 import logging
 from typing import Dict, List, Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
-import skfuzzy as fuzz
 import streamlit as st
 from kneed import KneeLocator
 from sklearn.cluster import AgglomerativeClustering, HDBSCAN, KMeans
@@ -25,7 +23,7 @@ MIN_PAPERS_FOR_CLUSTERING = 15
 MAX_NUMBER_OF_CLUSTERS = 15
 _DEFAULT_METRICS = {"SIL": 0, "DBI": 0, "CHI": 0}
 
-@st.cache_resource(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def get_optimal_k(papers: List[Paper]) -> int:
     """
     Find the optimal number of clusters using the elbow method
@@ -54,7 +52,7 @@ def get_optimal_k(papers: List[Paper]) -> int:
         return 1
 
 
-@st.cache_resource(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def get_papers_clusters_agglomerative(papers: List[Paper], n_clusters: int = 5):
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
         return {0: papers}, {}, _DEFAULT_METRICS
@@ -88,21 +86,13 @@ def get_papers_clusters_agglomerative(papers: List[Paper], n_clusters: int = 5):
         for paper_idx, paper in enumerate(papers):
             clusters[int(labels[paper_idx])].append(paper)
 
-        # TODO remove this for deployment
-        #plot_clusters_umap(is_hdbscan=False, X=X_normalized, labels=labels)
-
-        print(f"Agglomerative Clustering: {len(clusters)} clusters")
-        print(f"Metrics: {metrics}")
-        print(top_keywords)
-        print("=" * 50 + "\n")
-
         return dict(sorted(clusters.items())), top_keywords, metrics
     except Exception as e:
         logging.error(f"Agglomerative Clustering error: {e}")
         return {0: papers}, {}, _DEFAULT_METRICS
 
 
-@st.cache_resource(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def get_paper_clusters_hdbscan(papers: List[Paper]):
     """
     Performs HDBSCAN clustering on a list of papers.
@@ -164,47 +154,8 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
 
         noise_ratio = float(np.mean(labels == -1))
 
-        # TODO remove this for deployment
-        #plot_clusters_umap(is_hdbscan=True, X=X_normalized, labels=labels)
-
-        print(f"HDBSCAN Clustering: {len(clusters)} clusters (including noise)")
-        print(f"Metrics: {metrics}")
-        print(f"Noise Ratio: {noise_ratio}")
-
         return dict(sorted(clusters.items())), top_words, metrics
 
     except Exception as e:
         logging.error(f"HDBSCAN Clustering error: {e}")
         return {0: papers}, {}, _DEFAULT_METRICS
-
-
-def plot_clusters_umap(is_hdbscan, X, labels, save_path="clusters_umap.png"):
-    reducer = UMAP(
-        n_components=2,
-        n_neighbors=15,
-        random_state=42,
-    )
-    X_2d = reducer.fit_transform(X)
-
-    plt.figure(figsize=(8, 6))
-
-    for cluster in np.unique(labels):
-        mask = labels == cluster
-        legend_label = "Noise" if (cluster == -1 and is_hdbscan) else f"Cluster {cluster + 1}"
-        plt.scatter(
-            X_2d[mask, 0],
-            X_2d[mask, 1],
-            s=12,
-            alpha=0.75,
-            label=legend_label
-        )
-
-    plt.xlabel("UMAP Dimension 1")
-    plt.ylabel("UMAP Dimension 2")
-    plt.title("Clusters (UMAP projection)")
-    plt.legend(title="Clusters", markerscale=2)
-    plt.xticks([])
-    plt.yticks([])
-    plt.tight_layout()
-    plt.savefig(save_path)
-    plt.close()
