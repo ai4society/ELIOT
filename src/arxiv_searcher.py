@@ -37,13 +37,22 @@ BASE_DIR: str = os.environ.get(
 LOG_DIR = os.path.join(BASE_DIR, config["log_dir"])
 
 # Setup logging
-logging.basicConfig(
-    filename=os.path.join(
-        LOG_DIR, f"arxiv_searcher_{datetime.now().strftime('%Y%m%d')}.log"
-    ),
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+_log_format = "%(asctime)s - %(levelname)s - %(message)s"
+_logger = logging.getLogger()
+_logger.setLevel(logging.INFO)
+
+# File handler, local dev
+os.makedirs(LOG_DIR, exist_ok=True)
+_file_handler = logging.FileHandler(
+    os.path.join(LOG_DIR, f"arxiv_searcher_{datetime.now().strftime('%Y%m%d')}.log")
 )
+_file_handler.setFormatter(logging.Formatter(_log_format))
+_logger.addHandler(_file_handler)
+
+# Stream handler, visible in Streamlit Cloud logs
+_stream_handler = logging.StreamHandler()
+_stream_handler.setFormatter(logging.Formatter(_log_format))
+_logger.addHandler(_stream_handler)
 
 MAXIMUM_KEYWORDS_ALLOWED = 12
 
