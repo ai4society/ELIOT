@@ -74,9 +74,9 @@ def get_papers_clusters_agglomerative(papers: List[Paper], n_clusters: int = 5):
 
         if len(np.unique(labels)) >= 2:
             metrics = {
-                "SIL": silhouette_score(X_normalized, labels, metric="cosine"),
-                "DBI": davies_bouldin_score(X_normalized, labels),
-                "CHI": calinski_harabasz_score(X_normalized, labels),
+                "SIL": float(silhouette_score(X_normalized, labels, metric="cosine")),
+                "DBI": float(davies_bouldin_score(X_normalized, labels)),
+                "CHI": float(calinski_harabasz_score(X_normalized, labels)),
             }
         else:
             metrics = _DEFAULT_METRICS
@@ -132,6 +132,7 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
         clusters = {k: v for k, v in clusters.items() if v}
 
         if model.centroids_ is None or len(model.centroids_) == 0:
+            logging.info("No centroids found (Predicted labels are all noise), returning single cluster")
             return {0: papers}, {}, _DEFAULT_METRICS
 
         # Extract keywords only for real (non-noise) points.
@@ -145,14 +146,12 @@ def get_paper_clusters_hdbscan(papers: List[Paper]):
 
         if len(np.unique(y_eval)) >= 2:
             metrics = {
-                "SIL": silhouette_score(X_eval, y_eval, metric="cosine"),
-                "DBI": davies_bouldin_score(X_eval, y_eval),
-                "CHI": calinski_harabasz_score(X_eval, y_eval),
+                "SIL": float(silhouette_score(X_eval, y_eval, metric="cosine")),
+                "DBI": float(davies_bouldin_score(X_eval, y_eval)),
+                "CHI": float(calinski_harabasz_score(X_eval, y_eval)),
             }
         else:
             metrics = _DEFAULT_METRICS
-
-        noise_ratio = float(np.mean(labels == -1))
 
         return dict(sorted(clusters.items())), top_words, metrics
 
