@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import json
 import logging
 import os
+from time import sleep
 from datetime import datetime
 from typing import List
 
@@ -148,9 +149,9 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
         raise TooManyKeywordsError(f"Too many keywords provided ({len(keywords)}). Maximum allowed is {MAXIMUM_KEYWORDS_ALLOWED}.")
 
     client = arxiv.Client(
-        page_size=100,
-        delay_seconds=3,
-        num_retries=3
+        page_size=300,
+        delay_seconds=8,
+        num_retries=4
     )
     query = build_arxiv_query(keywords=keywords, category=category)
 
@@ -161,14 +162,14 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
     logging.info(f"Date Range: {start_date} - {end_date}")
     logging.info(f"Query being used: {query}\n")
 
-    search = arxiv.Search(
+    arxiv_search = arxiv.Search(
         query=str(query), 
         max_results=300, 
         sort_by=arxiv.SortCriterion.Relevance if sort_by == "relevance" else arxiv.SortCriterion.SubmittedDate
     )
 
     try:
-        return [
+        papers = [
             Paper(
                 arxiv_id=result.get_short_id(),
                 title=result.title,
@@ -182,8 +183,14 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
                 # Uses arxivql api to get the category name
                 categories=[categories_by_id[cat].name for cat in result.categories]
             )
-            for result in client.results(search)
+            for result in client.results(arxiv_search)
         ]
+        return papers
     except Exception as e:
-       logging.error("Error getting results: %s", e)
-       raise ArxivFetchingError("Error fetching papers")
+        error_str = str(e)
+        if "Too Many Requests" in error_str or "429" in error_str:
+            logging.warning("ArXiv returned 429 (rate limited).")
+            raise ArxivFetchingError("Error fetching papers: Too Many Requests")
+            
+        logging.error("ArXiv Fetching Error details: %s", e)
+        raise ArxivFetchingError("Error fetching papers")

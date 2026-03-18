@@ -25,7 +25,7 @@ from ml.ml_utils import (
 )
 
 
-@st.cache_data(ttl=timedelta(hours=1), max_entries=1000, show_spinner=False)
+@st.cache_data(ttl=timedelta(hours=2), max_entries=50, show_spinner=False)
 def search_papers(
     keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str
 ) -> List[Paper]:
@@ -41,9 +41,9 @@ def search_papers(
 def is_noise_cluster(cid: int) -> bool:
     """Returns True if cid represents the HDBSCAN noise/uncategorized cluster.
     After the +1 shift applied in streamlit_app, the noise sentinel (-1) becomes 0.
+    Agglomerative clustering clusters are strictly 1..N after the shift, so 0 is uniquely noise.
     """
-    method = st.session_state.get("clustering_method", "Auto-detect clusters")
-    return cid == 0 and method == "Auto-detect clusters"
+    return cid == 0
 
 
 def get_cluster_name(cid: int) -> str:
@@ -193,10 +193,51 @@ DEFAULT_KEYWORDS = "large language models, multi-agent systems"
 # This is NOT related to HDBSCAN's noise label (-1 pre-shift / 0 post-shift).
 ALL_PAPERS_TAB_KEY = -1
 
+@st.cache_data(ttl=timedelta(hours=24), show_spinner=False)
+def load_default_results() -> dict:
+    """
+    Loads the default data the first time the page loads.
+    This result is cached for 24 hours to serve as the initial data 
+    and as a fallback for ArXiv API rate limits.
+    """
+    sd = date(date.today().year - 1, date.today().month, date.today().day)
+    ed = date.today()
+    cat = "Computer Science"
+    
+    papers = search(
+        keywords=DEFAULT_KEYWORDS,
+        start_date=sd, 
+        end_date=ed, 
+        sort_by=ORDER_BY_OPTIONS["Relevance"], 
+        category=cat
+    )
+    
+    res = get_default_session_state()
+    res["searched"] = True
+    res["papers"] = papers
+    
+    clusters, top_words, metrics = get_paper_clusters_hdbscan(papers)
+    res["metrics"] = metrics
+    res["optimal_k"] = get_optimal_k(papers)
+    
+    ui_clusters = {k + 1: v for k, v in clusters.items()}
+    ui_top_words = {k + 1: v for k, v in top_words.items()}
+ 
+    ui_clusters[ALL_PAPERS_TAB_KEY] = papers
+    ui_top_words[ALL_PAPERS_TAB_KEY] = []
+    
+    res["clusters"] = ui_clusters
+    res["top_words"] = ui_top_words
+    return res
 
-# Initialize session state
+# Initialize session state (on startup we use the cached default query)
 if "search_results" not in st.session_state:
-    st.session_state["search_results"] = get_default_session_state()
+    try:
+        st.session_state["search_results"] = load_default_results()
+        st.session_state["clustering_method"] = "Auto-detect clusters"
+    except Exception as e:
+        logging.error(f"Failed to load initial cache: {e}")
+        st.session_state["search_results"] = get_default_session_state()
 
 st.title("Paper Discovery", anchor=False)
 
@@ -252,7 +293,7 @@ with col_search_bt:
 
 # On click
 if search_button:
-    # When making a new search, reset the session state
+    previous_results = st.session_state.get("search_results", get_default_session_state())
     st.session_state["clustering_method"] = "Auto-detect clusters"
     st.session_state["search_results"] = get_default_session_state()
 
@@ -265,7 +306,7 @@ if search_button:
                 keywords=keywords,
                 start_date=start_date,
                 end_date=end_date,
-                sort_opt=sort_option.lower(),
+                sort_opt=ORDER_BY_OPTIONS[sort_option],
                 category_option=category_option,
             )
             logging.info(f"Search successful: found {len(papers)} papers for keywords '{keywords}' in category '{category_option}'")
@@ -288,14 +329,23 @@ if search_button:
             # Add the "All Papers" tab (shows every paper, no cluster logic)
             ui_clusters[ALL_PAPERS_TAB_KEY] = papers
             ui_top_words[ALL_PAPERS_TAB_KEY] = []
+
             st.session_state["search_results"]["clusters"] = ui_clusters
             st.session_state["search_results"]["top_words"] = ui_top_words
         except (InvalidKeywordError, InvalidDateRangeError, TooManyKeywordsError) as e:
             st.error(f"⚠️ {str(e)}")
             logging.error(f"Input error: {str(e)}")
+
         except ArxivFetchingError as e:
-            st.warning("We couldn't fetch papers right now. Please try again in a few minutes.")
+            # When not able to fetch papers for the user's query, show the previous result
+            if previous_results.get("searched"):
+                st.warning("We couldn't fetch papers right now. Please try again in a few minutes. In the meantime, we are safely keeping your currently displayed results.")
+                st.session_state["search_results"] = previous_results
+            else:
+                st.warning("We couldn't fetch papers right now. Please try again in a few minutes. Showing sample papers in the meantime.")
+                st.session_state["search_results"] = load_default_results()
             logging.error(f"ArXiv Fetching Error details: {str(e)}")
+
         except Exception as e:
             st.error("⚠️ An unexpected error occurred")
             logging.error(f"Unexpected Streamlit error in main loop: {str(e)}", exc_info=True)
