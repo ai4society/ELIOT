@@ -26,6 +26,7 @@ def load_nltk_resources():
         ("corpora/omw-1.4", "omw-1.4"),
         ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng"),
         ("tokenizers/punkt", "punkt"),
+        ("tokenizers/punkt_tab", "punkt_tab"),
     ]
     for path, pkg in resources:
         try:
