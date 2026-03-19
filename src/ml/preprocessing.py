@@ -1,10 +1,11 @@
+import logging
 import re
+from datetime import timedelta
 from typing import List
 
 import nltk
 import numpy as np
 import streamlit as st
-import logging
 from bertopic.vectorizers import ClassTfidfTransformer
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
@@ -14,6 +15,7 @@ from sklearn.preprocessing import normalize
 from umap import UMAP
 
 from arxiv_searcher import Paper
+from utils import timeit
 
 
 _LEMMATIZER = WordNetLemmatizer()
@@ -89,14 +91,19 @@ def clean_and_lemmatize(text: str) -> str:
     return " ".join(lemmas)
 
 
+@st.cache_data(ttl=timedelta(hours=1), max_entries=25, show_spinner=False)
+@timeit
 def preprocess_texts(papers: List[Paper]) -> List[str]:
     """Cleans and lemmatizes texts. Returns preprocessed strings."""
     logging.info(f"Preprocessing & Lemmatizing {len(papers)} papers...")
     return [clean_and_lemmatize(doc) for doc in [p.title + " " + p.abstract for p in papers]]
 
 
+@st.cache_data(ttl=timedelta(hours=1), max_entries=25, show_spinner=False)
+@timeit
 def embed_and_reduce(cleaned_texts: List[str]) -> np.ndarray:
     """Embeds texts and reduces dimensionality for clustering."""
+    logging.info("Embedding & Reducing dimensionality...")
     X = embed_and_normalize(cleaned_texts)
     reducer = UMAP(n_neighbors=15, n_components=10, metric="cosine", random_state=42)
     X = reducer.fit_transform(X)
