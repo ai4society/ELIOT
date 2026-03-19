@@ -2,7 +2,6 @@ import logging
 from typing import Dict, List, Tuple
 
 import numpy as np
-import streamlit as st
 from kneed import KneeLocator
 from sklearn.cluster import AgglomerativeClustering, HDBSCAN, KMeans
 from sklearn.metrics import (
@@ -13,6 +12,8 @@ from sklearn.metrics import (
 from umap import UMAP
 
 from arxiv_searcher import Paper
+from utils import timeit
+
 from .preprocessing import (
     embed_and_reduce,
     get_cluster_keywords,
@@ -23,7 +24,8 @@ MIN_PAPERS_FOR_CLUSTERING = 15
 MAX_NUMBER_OF_CLUSTERS = 15
 _DEFAULT_METRICS = {"SIL": 0, "DBI": 0, "CHI": 0}
 
-@st.cache_data(show_spinner=False)
+
+@timeit
 def get_optimal_k(papers: List[Paper]) -> int:
     """
     Find the optimal number of clusters using the elbow method
@@ -32,6 +34,7 @@ def get_optimal_k(papers: List[Paper]) -> int:
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
         return 1
 
+    logging.info("Calculating optimal number of clusters...")
     try:
         X_cleaned = preprocess_texts(papers)
         X_normalized = embed_and_reduce(X_cleaned)
@@ -52,7 +55,7 @@ def get_optimal_k(papers: List[Paper]) -> int:
         return 1
 
 
-@st.cache_data(show_spinner=False)
+@timeit
 def get_papers_clusters_agglomerative(papers: List[Paper], n_clusters: int = 5):
     if not papers or len(papers) < MIN_PAPERS_FOR_CLUSTERING:
         return {0: papers}, {}, _DEFAULT_METRICS
@@ -92,7 +95,7 @@ def get_papers_clusters_agglomerative(papers: List[Paper], n_clusters: int = 5):
         return {0: papers}, {}, _DEFAULT_METRICS
 
 
-@st.cache_data(show_spinner=False)
+@timeit
 def get_paper_clusters_hdbscan(papers: List[Paper]):
     """
     Performs HDBSCAN clustering on a list of papers.
