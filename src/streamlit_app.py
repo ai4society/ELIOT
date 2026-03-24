@@ -1,5 +1,6 @@
 import logging
 from datetime import date, timedelta
+from enum import Enum
 from pathlib import Path
 from typing import List
 
@@ -23,6 +24,11 @@ from ml.ml_utils import (
     get_paper_clusters_hdbscan,
     get_papers_clusters_agglomerative,
 )
+
+
+class ClusteringMethod(str, Enum):
+    AUTO_DETECT = "Auto-detect clusters"
+    SPECIFY_NUMBER = "Specify number of clusters"
 
 
 @st.cache_data(ttl=timedelta(hours=2), max_entries=50, show_spinner=False)
@@ -219,6 +225,7 @@ def load_default_results() -> dict:
     clusters, top_words, metrics = get_paper_clusters_hdbscan(papers)
     res["metrics"] = metrics
     res["optimal_k"] = get_optimal_k(papers)
+    res["applied_clustering_method"] = ClusteringMethod.AUTO_DETECT.value
     
     ui_clusters = {k + 1: v for k, v in clusters.items()}
     ui_top_words = {k + 1: v for k, v in top_words.items()}
@@ -234,7 +241,7 @@ def load_default_results() -> dict:
 if "search_results" not in st.session_state:
     try:
         st.session_state["search_results"] = load_default_results()
-        st.session_state["clustering_method"] = "Auto-detect clusters"
+        st.session_state["clustering_method"] = ClusteringMethod.AUTO_DETECT.value
     except Exception as e:
         logging.error(f"Failed to load initial cache: {e}")
         st.session_state["search_results"] = get_default_session_state()
@@ -292,7 +299,7 @@ with col_search_bt:
 # On click
 if search_button:
     previous_results = st.session_state.get("search_results", get_default_session_state())
-    st.session_state["clustering_method"] = "Auto-detect clusters"
+    st.session_state["clustering_method"] = ClusteringMethod.AUTO_DETECT.value
     st.session_state["search_results"] = get_default_session_state()
 
     with st.spinner("🔎 Searching papers..."):
@@ -318,6 +325,7 @@ if search_button:
                 clusters, top_words, metrics = get_paper_clusters_hdbscan(papers)
                 st.session_state["search_results"]["metrics"] = metrics
                 st.session_state["search_results"]["optimal_k"] = get_optimal_k(papers)
+                st.session_state["search_results"]["applied_clustering_method"] = ClusteringMethod.AUTO_DETECT.value
 
                 # Shift real clusters (0..N-1) to (1..N).
                 # Noise sentinel (-1) becomes 0 after +1 shift.
@@ -380,7 +388,7 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
                 with col_radio:
                     method = st.radio(
                         "Clustering Method",
-                        ["Auto-detect clusters", "Specify number of clusters"],
+                        [m.value for m in ClusteringMethod],
                         # Set the current value to session_state["clustering_method"]
                         key="clustering_method",
                         label_visibility="visible",
@@ -389,7 +397,7 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
                             "how many clusters will be created.")
                     )
 
-                if method == "Specify number of clusters":
+                if method == ClusteringMethod.SPECIFY_NUMBER.value:
                     n_clusters = st.slider(
                         "Number of Clusters", 
                         min_value=1, 
@@ -406,7 +414,7 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
                 # Clusters are returned as a dictionary with keys from 0 to N-1
                 # We shift them by 1 for UI representation
 
-                if method == "Auto-detect clusters":
+                if method == ClusteringMethod.AUTO_DETECT.value:
                     clusters, top_words, metrics = get_paper_clusters_hdbscan(st.session_state['search_results']['papers'])
                 else:
                     clusters, top_words, metrics = get_papers_clusters_agglomerative(st.session_state['search_results']['papers'], n_clusters)
@@ -423,8 +431,7 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
                 st.session_state["search_results"]["clusters"] = ui_clusters
                 st.session_state["search_results"]["top_words"] = ui_top_words
                 st.session_state["search_results"]["metrics"] = metrics
-                # Reset the "show more" state whenever a new clustering run is triggered
-                st.session_state["search_results"]["show_all_clusters"] = False
+                st.session_state["search_results"]["applied_clustering_method"] = method
 
                 # Update local variables so the immediate render correctly uses 1..N instead of 0..N-1
                 clusters = ui_clusters
@@ -440,25 +447,31 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
             # If the user clicks "Show All", this limitation is removed and all detected clusters will be rendered.
             optimal_k = st.session_state["search_results"].get("optimal_k")
             show_all = st.session_state["search_results"].get("show_all_clusters")
+            applied_method = st.session_state["search_results"].get("applied_clustering_method")
 
-            if not show_all:
-                visible_cluster_ids = display_cluster_ids[:optimal_k]
-            else:
+            if applied_method == ClusteringMethod.SPECIFY_NUMBER.value:
+                # When user specifies the number of clusters, show all of them
                 visible_cluster_ids = display_cluster_ids
+                total_clusters = len(display_cluster_ids)
+            else:
+                if not show_all:
+                    visible_cluster_ids = display_cluster_ids[:optimal_k]
+                else:
+                    visible_cluster_ids = display_cluster_ids
 
-            total_clusters = len(display_cluster_ids)
+                total_clusters = len(display_cluster_ids)
 
-            # Show All / Show less toggle
-            if total_clusters > optimal_k:
-                toggle_label = f"Show All" if not show_all else "Show Less"
-                st.markdown(
-                    f"<div class='cluster-showing-label'>Showing {len(visible_cluster_ids)} of {total_clusters} clusters</div>",
-                    unsafe_allow_html=True
-                )
+                # Show All / Show less toggle
+                if total_clusters > optimal_k:
+                    toggle_label = f"Show All" if not show_all else "Show Less"
+                    st.markdown(
+                        f"<div class='cluster-showing-label'>Showing {len(visible_cluster_ids)} of {total_clusters} clusters</div>",
+                        unsafe_allow_html=True
+                    )
 
-                if st.button(toggle_label, key="toggle_clusters"):
-                    st.session_state["search_results"]["show_all_clusters"] = not show_all
-                    st.rerun()
+                    if st.button(toggle_label, key="toggle_clusters"):
+                        st.session_state["search_results"]["show_all_clusters"] = not show_all
+                        st.rerun()
 
             # Show top words above the cluster graph
             for row_start in range(0, len(visible_cluster_ids), 3):
