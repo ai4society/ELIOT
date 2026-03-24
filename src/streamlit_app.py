@@ -123,7 +123,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
     )
 
     fig.add_annotation(
-        x=1.02,
+        x=1.01,
         y=0,
         xref="paper",
         yref="paper",
@@ -132,9 +132,9 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         align="left",
         showarrow=False,
         text=(
-            "Metrics:<br>"
-            f"     <b>Davies–Bouldin</b>: {metrics['DBI']:.2f}<br>"
-            f"     <b>Calinski–Harabasz</b>: {metrics['CHI']:.2f}<br>"
+            "Metrics (Based on All Clusters):<br>"
+            f"     <b>Davie Bouldin</b>: {metrics['DBI']:.2f}<br>"
+            f"     <b>Calinski Harabasz</b>: {metrics['CHI']:.2f}<br>"
             f"     <b>Silhouette</b>: {metrics['SIL']:.3f}"
         ),
     )
@@ -268,7 +268,7 @@ with col_category:
     )
 
 col_start_date, col_end_date, col_order_by, col_search_bt = st.columns(
-    [1, 1, 1.5, 1], vertical_alignment="center"
+    [1, 1, 1.5, 1], vertical_alignment="bottom"
 )
 
 with col_start_date:
@@ -287,9 +287,7 @@ with col_order_by:
     )
 
 with col_search_bt:
-    # Keeps button's vertical alignment
-    st.markdown("<div style='height: 1.7rem;'></div>", unsafe_allow_html=True)
-    search_button = st.button("Search")
+    search_button = st.button("Search", use_container_width=True)
 
 # On click
 if search_button:
@@ -350,17 +348,15 @@ if search_button:
             st.error("⚠️ An unexpected error occurred")
             logging.error(f"Unexpected Streamlit error in main loop: {str(e)}", exc_info=True)
 
-if st.session_state["search_results"]["searched"] and st.session_state["search_results"]["papers"]:
-    papers = st.session_state["search_results"]["papers"]
+if st.session_state["search_results"].get("searched") and st.session_state["search_results"].get("papers"):
+    papers = st.session_state["search_results"].get("papers")
     clustering_active = len(papers) >= MIN_PAPERS_FOR_CLUSTERING
     
-    col_results = st.columns(1)[0]
-    with col_results:
-        # Show number of results
-        st.markdown(
-            f"<div class='results-count'>{len(st.session_state['search_results']['papers'])} Papers Found</div>",
-            unsafe_allow_html=True,
-        )
+    # Show number of results
+    st.markdown(
+        f"<div class='results-count'>📄 {len(st.session_state['search_results'].get('papers'))} Papers Found</div>",
+        unsafe_allow_html=True,
+    )
 
     # Show each paper
     clusters = st.session_state["search_results"].get("clusters")
@@ -370,41 +366,41 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
     cluster_ids = sort_cluster_ids(list(clusters.keys()))
 
     if clustering_active:
-
-        col_toggle = st.columns(1)[0]
-        with col_toggle:
-            show_clusters = st.toggle("Show Clusters", value=True)
+        col_show_clusters, col_method = st.columns([0.5, 0.5])
+        with col_show_clusters:
+            show_clusters = st.toggle("Cluster Settings & Analysis", value=True)
 
         if show_clusters:
-            col_radio, col_button = st.columns([0.55, 1.2], vertical_alignment="center")
+            if st.session_state["search_results"].get("show_optimal_k"):
+                st.toast(f"Based on our analysis, the optimal number of clusters is {st.session_state["search_results"].get("optimal_k")}.", duration="long", icon="💡")
+                st.session_state["search_results"]["show_optimal_k"] = False
 
-            with col_radio:
-                method = st.radio(
-                    "Clustering Method",
-                    ["Auto-detect clusters", "Specify number of clusters"],
-                    # Set the current value to session_state["clustering_method"]
-                    key="clustering_method",
-                    label_visibility="visible",
-                    help=("Controls how papers are grouped. Auto-detect automatically discovers "
-                        "topic groups from the data. Specify number allows you to manually set "
-                        "how many clusters will be created.")
-                )
-            with col_button:
-                cluster_button = st.button("Cluster")
+            with col_method:
+                _, col_radio, _ = st.columns([1, 2, 1])
+                with col_radio:
+                    method = st.radio(
+                        "Clustering Method",
+                        ["Auto-detect clusters", "Specify number of clusters"],
+                        # Set the current value to session_state["clustering_method"]
+                        key="clustering_method",
+                        label_visibility="visible",
+                        help=("Controls how papers are grouped. Auto-detect automatically discovers "
+                            "topic groups from the data. Specify number allows you to manually set "
+                            "how many clusters will be created.")
+                    )
 
-            if method == "Specify number of clusters":
-                if st.session_state["search_results"]["show_optimal_k"]:
-                    st.toast(f"Based on our analysis, the optimal number of clusters is {st.session_state['search_results']['optimal_k']}.", duration="short", icon="💡")
-                    st.session_state["search_results"]["show_optimal_k"] = False
-
-                col_slider, _ = st.columns([0.6, 0.7]) 
-                with col_slider:
+                if method == "Specify number of clusters":
                     n_clusters = st.slider(
                         "Number of Clusters", 
                         min_value=1, 
                         max_value=MAX_NUMBER_OF_CLUSTERS, 
                         value=st.session_state['search_results']['optimal_k']
                     )
+
+                _, col_center, _ = st.columns([1, 2, 1])
+                with col_center:
+                    cluster_button = st.button("Run Clustering", use_container_width=True)
+                st.markdown(f"<div style='margin-bottom:-1rem;'></div>", unsafe_allow_html=True)
 
             if cluster_button:
                 # Clusters are returned as a dictionary with keys from 0 to N-1
@@ -434,8 +430,6 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                 clusters = ui_clusters
                 top_words = ui_top_words
 
-            st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-
             cluster_ids = sort_cluster_ids(list(clusters.keys()))
             color_map = build_cluster_color_map(cluster_ids)
 
@@ -452,6 +446,20 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
             else:
                 visible_cluster_ids = display_cluster_ids
 
+            total_clusters = len(display_cluster_ids)
+
+            # Show All / Show less toggle
+            if total_clusters > optimal_k:
+                toggle_label = f"Show All" if not show_all else "Show Less"
+                st.markdown(
+                    f"<div class='cluster-showing-label'>Showing {len(visible_cluster_ids)} of {total_clusters} clusters</div>",
+                    unsafe_allow_html=True
+                )
+
+                if st.button(toggle_label, key="toggle_clusters"):
+                    st.session_state["search_results"]["show_all_clusters"] = not show_all
+                    st.rerun()
+
             # Show top words above the cluster graph
             for row_start in range(0, len(visible_cluster_ids), 3):
                 row_ids = visible_cluster_ids[row_start:row_start + 3]
@@ -467,38 +475,22 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                         cluster_color = color_map.get(cluster_label)
 
                         st.markdown(
-                            f"<div style='display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;'>"
+                            f"<div style='display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:1.3rem;'>"
                             f"<span style='font-size:0.75rem; font-weight:700; color:{cluster_color};'>{cluster_label}</span>"
                             f"{badges}"
                             f"</div>",
                             unsafe_allow_html=True
                         )
-
-            total_clusters = len(display_cluster_ids)
-
-            # Show All / Show less toggle
-            if total_clusters > optimal_k:
-                toggle_label = f"Show All" if not show_all else "Show Less"
-
-                st.markdown(
-                    f"""
-                    <div style='margin-top: 0.8rem;'></div>
-                    <div style="font-size:0.9rem; margin-bottom:0.07rem;">
-                    Showing {len(visible_cluster_ids)} of {total_clusters} clusters
-                    </div>
-                """, unsafe_allow_html=True
-                )
-
-                if st.button(toggle_label, key="toggle_clusters"):
-                    st.session_state["search_results"]["show_all_clusters"] = not show_all
-                    st.rerun()
  
             try:
                 # Flatten the clusters to match the dataframe indices (skip All Papers and noise)
+                # Only include clusters within the visible set (respects optimal_k / show_all)
                 ordered_papers = []
                 all_labels = []
                 for label, p_list in clusters.items():
                     if label in (ALL_PAPERS_TAB_KEY, 0):  # All Papers or Uncategorized
+                        continue
+                    if label not in visible_cluster_ids:  # Respect optimal_k gate
                         continue
                     for paper in p_list:
                         ordered_papers.append(paper)
@@ -517,10 +509,30 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
         st.info("Not enough papers to visualize clusters.")
 
     # Show papers by cluster
-    tab_titles = [get_cluster_name(cid) for cid in cluster_ids]
+    # When show_all is False, tabs only show optimal_k clusters + All Papers tab.
+    # The noise cluster (0) is always included if present.
+    if clustering_active and show_clusters:
+        noise_ids = [c for c in cluster_ids if is_noise_cluster(c)]
+        all_papers_ids = [c for c in cluster_ids if c == ALL_PAPERS_TAB_KEY]
+        if show_all:
+            visible_tab_ids = cluster_ids
+        else:
+            visible_tab_ids = all_papers_ids + sort_cluster_ids(visible_cluster_ids) + noise_ids
+            # de-duplicate while preserving order
+            seen = set()
+            deduped = []
+            for x in visible_tab_ids:
+                if x not in seen:
+                    seen.add(x)
+                    deduped.append(x)
+            visible_tab_ids = deduped
+    else:
+        visible_tab_ids = cluster_ids
+
+    tab_titles = [get_cluster_name(cid) for cid in visible_tab_ids]
     tabs = st.tabs(tab_titles)
 
-    for tab, cluster_id in zip(tabs, cluster_ids):
+    for tab, cluster_id in zip(tabs, visible_tab_ids):
         with tab:
             if clustering_active:
                 base_html = """
@@ -569,8 +581,8 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                         <div class="paper-main-category tooltip">{paper.main_category}<span class="tooltiptext">Primary Category</span></div>{other_cats_html}
                     </div>
                     <div class="paper-metadata">
-                        <span class="metadata-item">📅 {paper_date}</span>
-                        <span class="metadata-item">🔗 <a href="{paper.link}">View on arXiv</a></span>
+                        <span>📅 {paper_date}</span>
+                        <span>🔗 <a href="{paper.link}">View on arXiv</a></span>
                     </div>
                 </div>
                 """
@@ -588,5 +600,5 @@ if st.session_state["search_results"]["searched"] and st.session_state["search_r
                     )
 
 # Empty state
-elif st.session_state["search_results"]["searched"] and not st.session_state["search_results"]["papers"]:
+elif st.session_state["search_results"].get("searched") and not st.session_state["search_results"].get("papers"):
     st.info("🔍 No papers found. Try adjusting your keywords or search period.")
