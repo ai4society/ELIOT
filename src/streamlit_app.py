@@ -97,7 +97,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             "x": False, 
             "y": False
         },
-        title="Paper Clusters"
+        title="Evolution of Research Topics Over Time"
     )
     
     # Format axes to show original categories (Years and Cluster IDs)
