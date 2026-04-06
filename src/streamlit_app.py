@@ -139,8 +139,8 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         showarrow=False,
         text=(
             "Metrics (Based on All Clusters):<br>"
-            f"     <b>Davies-Bouldin Index</b>: {metrics['DBI']:.2f}<br>"
-            f"     <b>Calinski-Harabasz Index</b>: {metrics['CHI']:.2f}<br>"
+            f"     <b>Davies-Bouldin</b>: {metrics['DBI']:.2f}<br>"
+            f"     <b>Calinski-Harabasz</b>: {metrics['CHI']:.2f}<br>"
             f"     <b>Silhouette Score</b>: {metrics['SIL']:.3f}"
         ),
     )
