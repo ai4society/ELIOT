@@ -64,15 +64,13 @@ def sort_cluster_ids(cluster_ids: List[int]) -> List[int]:
     noise_cluster = [c for c in cluster_ids if is_noise_cluster(c)]
     return all_papers + normal_clusters + noise_cluster
 
-
 def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metrics: dict):
-    # Use Year and Cluster for visualization
     years = [p.published.year for p in ordered_papers]
     cluster_nums = [int(label) for label in all_labels]
     K = len(set(all_labels))
 
-    # Add jitter to avoid overlapping points since both axes are discrete
     np.random.seed(42)
+    # Add jitter to avoid overlapping points since both axes are discrete
     jitter_x = np.random.uniform(-0.3, 0.3, size=len(ordered_papers))
     jitter_y = np.random.uniform(-0.3, 0.3, size=len(ordered_papers))
 
@@ -85,47 +83,64 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         "Date": [p.published.strftime("%Y-%m-%d") for p in ordered_papers]
     })
 
+    df_viz["Papers this year"] = df_viz.groupby(["Year", "Cluster"])["Title"].transform("count")
+
     fig = px.scatter(
-        df_viz, 
-        x="x", y="y", 
-        color="Cluster", 
+        df_viz,
+        x="x", y="y",
+        color="Cluster",
         color_discrete_map=color_map,
         hover_data={
-            "Title": True, 
+            "Title": True,
             "Date": True,
             "Cluster": True,
-            "x": False, 
+            "Papers this year": True,
+            "x": False,
             "y": False
         },
-        title="Evolution of Research Topics Over Time"
+        title="Evolution of Research Topics Over Time",
+        template="plotly_white"
     )
-    
-    # Format axes to show original categories (Years and Cluster IDs)
+
+    fig.update_traces(
+        marker=dict(
+            size=11,
+            opacity=0.90,
+            line=dict(width=0.8, color="white")
+        )
+    )
+
     fig.update_layout(
-        # Place legend outside the plotting area
+        font=dict(family="Inter, Arial, sans-serif", size=13),
+        title=dict(font=dict(size=16), x=0.01),
         legend=dict(
             x=1.02,
             y=1.0,
             xanchor="left",
-            yanchor="top"
+            yanchor="top",
+            title_text="Cluster",
         ),
         xaxis=dict(
             title="Year",
-            tickmode='linear',
+            tickmode="linear",
             dtick=1,
             showgrid=True,
-            gridcolor='rgba(200, 200, 200, 0.2)'
+            gridcolor="rgba(200,200,200,0.3)",
+            zeroline=False,
         ),
         yaxis=dict(
             title="Cluster ID",
-            tickmode='array',
+            tickmode="array",
             tickvals=sorted(list(set(cluster_nums))),
             ticktext=[get_cluster_name(c) for c in sorted(list(set(cluster_nums)))],
             showgrid=True,
-            gridcolor='rgba(200, 200, 200, 0.2)'
+            gridcolor="rgba(200,200,200,0.15)",
+            zeroline=False,
         ),
-        plot_bgcolor='rgba(0,0,0,0)',
-        hovermode="closest"
+        plot_bgcolor="rgba(250,250,250,0.5)",
+        paper_bgcolor="white",
+        hovermode="closest",
+        margin=dict(r=200),
     )
 
     fig.add_annotation(
@@ -137,6 +152,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         yanchor="top",
         align="left",
         showarrow=False,
+        font=dict(size=11),
         text=(
             "Metrics (Based on All Clusters):<br>"
             f"     <b>Davies-Bouldin</b>: {metrics['DBI']:.2f}<br>"
@@ -145,11 +161,11 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         ),
     )
 
-    fig.update_layout(margin=dict(r=160))
-    base_height = 500
-    # Adjust plot height linearly after 10 clusters
-    height = base_height + max(0, K - 10) * 30
-    height = max(500, min(height, 850))
+    base_height = 300
+    height_per_cluster = 40
+    height = base_height + K * height_per_cluster
+    height = max(500, min(height, 1000))
+
     return st.plotly_chart(fig, height=height)
 
 
