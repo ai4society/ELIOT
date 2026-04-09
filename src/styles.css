@@ -420,3 +420,10 @@ div[data-testid="stToggle"] label span {
     margin-bottom: 0.6rem;
     letter-spacing: 0.01em;
 }
+
+/* ─────────────────────────────────────────────
+   Hide "Press Enter to apply" hint in search box
+───────────────────────────────────────────── */
+div[data-testid="InputInstructions"] {
+    display: none !important;
+}
