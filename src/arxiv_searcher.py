@@ -2,7 +2,6 @@ from dataclasses import dataclass
 import json
 import logging
 import os
-from time import sleep
 from datetime import datetime
 from typing import List
 
@@ -101,7 +100,6 @@ def build_arxiv_query(keywords: List[str], category: str = "cs") -> Query:
     if category not in ARXIV_CATEGORIES.keys():
         raise InvalidCategoryError(f"Invalid arxiv category. Categories available: {ARXIV_CATEGORIES.keys()}") 
 
-    # Each keyword must be in title OR abstract
     keyword_query = None
     for kw in keywords:
         kw = kw.strip()
@@ -109,7 +107,9 @@ def build_arxiv_query(keywords: List[str], category: str = "cs") -> Query:
             continue
 
         try:
-            clause = Query.title(kw) | Query.abstract(kw)
+            # 'all' prefix for each keyword. Although broader in theory, in practice results are dominated
+            # by title/abstract matches, and the simpler query structure yields better recall
+            clause = Query.all(kw)
         except ValueError:
             logging.warning(f"Skipping malformed keyword: '{kw}'")
             raise InvalidKeywordError("Keyword with double quotes or parentheses are not allowed.")
