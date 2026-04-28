@@ -527,10 +527,10 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
 
                 metrics = st.session_state["search_results"].get("metrics")
                 create_cluster_viz(ordered_papers, all_labels, {
-                    "DBI": metrics["DBI"],
-                    "CHI": metrics["CHI"],
-                    "SIL": metrics["SIL"]
-                    })
+                    "DBI": metrics.get("DBI", 0.0),
+                    "CHI": metrics.get("CHI", 0.0),
+                    "SIL": metrics.get("SIL", 0.0),
+                })
             except Exception as e:
                 st.warning("Visualization failed")
                 logging.error(f"Visualization failed: {e}")
