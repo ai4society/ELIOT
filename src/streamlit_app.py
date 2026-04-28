@@ -370,7 +370,15 @@ if search_button:
 
         except Exception as e:
             st.error("⚠️ An unexpected error occurred")
-            logging.error(f"Unexpected Streamlit error in main loop: {str(e)}", exc_info=True)
+            logging.error(
+                f"\n ERROR DETAILS: {str(e)}\n\n"
+                f"  User search parameters:\n"
+                f"  keywords={keywords or DEFAULT_KEYWORDS}\n"
+                f"  category={category_option}\n"
+                f"  sort={sort_option}\n"
+                f"  date_range={start_date} to {end_date}\n",
+                exc_info=True,
+            )
 
 if st.session_state["search_results"].get("searched") and st.session_state["search_results"].get("papers"):
     papers = st.session_state["search_results"].get("papers")
@@ -559,6 +567,26 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
         visible_tab_ids = cluster_ids
 
     tab_titles = [get_cluster_name(cid) for cid in visible_tab_ids]
+
+    if not tab_titles:
+        logging.error(
+            f"Empty tab_titles detected:\n"
+            f"  keywords={keywords or DEFAULT_KEYWORDS}\n"
+            f"  category={category_option}\n"
+            f"  sort={sort_option}\n"
+            f"  date_range={start_date} to {end_date}\n"
+            f"  papers_count={len(papers)}\n"
+            f"  clustering_active={clustering_active}\n"
+            f"  visible_tab_ids={visible_tab_ids}\n"
+            f"  cluster_ids={cluster_ids}\n"
+            f"  session_searched={st.session_state['search_results'].get('searched')}\n"
+            f"  session_metrics={st.session_state['search_results'].get('metrics')}"
+        )
+        # Fallback to ensure at least the "All Papers" tab is shown
+        clusters[ALL_PAPERS_TAB_KEY] = papers
+        visible_tab_ids = [ALL_PAPERS_TAB_KEY]
+        tab_titles = [get_cluster_name(ALL_PAPERS_TAB_KEY)]
+        st.warning("⚠️ Unable to display clusters. Please try searching again.")
     tabs = st.tabs(tab_titles)
 
     for tab, cluster_id in zip(tabs, visible_tab_ids):
