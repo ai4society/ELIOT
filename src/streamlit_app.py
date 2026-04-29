@@ -191,7 +191,7 @@ def get_default_session_state():
 
 
 st.set_page_config(
-    page_title="Paper Explorer", page_icon="📚", layout="centered"
+    page_title="Literature Exploration", page_icon="📚", layout="centered"
 )
 
 css_path = Path(__file__).parent / "styles.css"
@@ -276,9 +276,9 @@ with col_keywords:
         "Search Keywords or Phrases",
         placeholder=f"{DEFAULT_KEYWORDS}",
         help=(
-            "Enter one or more keywords or phrases separated by commas. "
-            "Results include only papers where all keywords are present. "
-            f"If left empty, the default keywords - {DEFAULT_KEYWORDS} - will be used."
+            "Enter comma-separated keywords, each may contain multiple words. "
+            "Results include only papers containing all keywords. "
+            f"If empty, defaults to: {DEFAULT_KEYWORDS}."
         ),
     )
 
@@ -627,34 +627,35 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
                         unsafe_allow_html=True
                     )
 
-            for paper in clusters[cluster_id]:
-                paper_date = paper.published.strftime("%d/%m/%Y")
-                other_cats_html = "".join(f'<div class="paper-other-categories">{cat}</div>' for cat in paper.categories[1:])
+            with st.container(height=800, border=True):
+                for paper in clusters[cluster_id]:
+                    paper_date = paper.published.strftime("%d/%m/%Y")
+                    other_cats_html = "".join(f'<div class="paper-other-categories">{cat}</div>' for cat in paper.categories[1:])
 
-                paper_html = f"""
-                <div class="paper-card">
-                    <div class="paper-title">{paper.title}</div>
-                    <div class="paper-categories">
-                        <div class="paper-main-category tooltip">{paper.main_category}<span class="tooltiptext">Primary Category</span></div>{other_cats_html}
+                    paper_html = f"""
+                    <div class="paper-card">
+                        <div class="paper-title">{paper.title}</div>
+                        <div class="paper-categories">
+                            <div class="paper-main-category tooltip">{paper.main_category}<span class="tooltiptext">Primary Category</span></div>{other_cats_html}
+                        </div>
+                        <div class="paper-metadata">
+                            <span>📅 {paper_date}</span>
+                            <span>🔗 <a href="{paper.link}">View on arXiv</a></span>
+                        </div>
                     </div>
-                    <div class="paper-metadata">
-                        <span>📅 {paper_date}</span>
-                        <span>🔗 <a href="{paper.link}">View on arXiv</a></span>
-                    </div>
-                </div>
-                """
-                st.markdown(paper_html, unsafe_allow_html=True)
+                    """
+                    st.markdown(paper_html, unsafe_allow_html=True)
 
-                with st.expander("View details"):
-                    authors_str = ", ".join(paper.authors)
-                    st.markdown(
-                        f"""
-                        <div class='paper-authors'><strong>Authors:</strong> {authors_str}</div>
-                        [📄 <a href='{paper.pdf_link}'>PDF</a>]
-                        <div class='paper-abstract'><strong>Abstract</strong><br>{paper.abstract}</div>
-                    """,
-                        unsafe_allow_html=True,
-                    )
+                    with st.expander("View details"):
+                        authors_str = ", ".join(paper.authors)
+                        st.markdown(
+                            f"""
+                            <div class='paper-authors'><strong>Authors:</strong> {authors_str}</div>
+                            [📄 <a href='{paper.pdf_link}'>PDF</a>]
+                            <div class='paper-abstract'><strong>Abstract</strong><br>{paper.abstract}</div>
+                        """,
+                            unsafe_allow_html=True,
+                        )
 
 # Empty state
 elif st.session_state["search_results"].get("searched") and not st.session_state["search_results"].get("papers"):
