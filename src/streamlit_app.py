@@ -191,7 +191,7 @@ def get_default_session_state():
 
 
 st.set_page_config(
-    page_title="Literature Exploration", page_icon="📚", layout="centered"
+    page_title="Eliot", page_icon="📚", layout="centered"
 )
 
 css_path = Path(__file__).parent / "styles.css"
@@ -262,10 +262,10 @@ if "search_results" not in st.session_state:
         logging.error(f"Failed to load initial cache: {e}")
         st.session_state["search_results"] = get_default_session_state()
 
-st.title("Paper Discovery", anchor=False)
+st.title("Eliot", anchor=False)
 
 st.markdown(
-    "<div class='page-subtitle'>Discover and explore trends in research papers across ArXiv</div>",
+    "<div class='page-subtitle'>Interactively Exploring Fast-Changing Scientific Literature Trends with Online Data and ML</div>",
     unsafe_allow_html=True,
 )
 
