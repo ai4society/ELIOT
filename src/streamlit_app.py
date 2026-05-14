@@ -99,7 +99,6 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             "y": False
         },
         title="Evolution of Research Topics Over Time",
-        template="plotly_white"
     )
 
     fig.update_traces(
@@ -125,7 +124,6 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             tickmode="linear",
             dtick=1,
             showgrid=True,
-            gridcolor="rgba(200,200,200,0.3)",
             zeroline=False,
         ),
         yaxis=dict(
@@ -134,11 +132,8 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             tickvals=sorted(list(set(cluster_nums))),
             ticktext=[get_cluster_name(c) for c in sorted(list(set(cluster_nums)))],
             showgrid=True,
-            gridcolor="rgba(200,200,200,0.15)",
             zeroline=False,
         ),
-        plot_bgcolor="rgba(250,250,250,0.5)",
-        paper_bgcolor="white",
         hovermode="closest",
         margin=dict(r=200),
     )
@@ -155,9 +150,9 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         font=dict(size=11),
         text=(
             "Metrics (Based on All Clusters):<br>"
-            f"     <b>Davies-Bouldin</b>: {metrics['DBI']:.2f}<br>"
-            f"     <b>Calinski-Harabasz</b>: {metrics['CHI']:.2f}<br>"
-            f"     <b>Silhouette Score</b>: {metrics['SIL']:.3f}"
+            f"     <a href='https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index' target='_blank'><b>Davies-Bouldin</b></a>: {metrics['DBI']:.2f}<br>"
+            f"     <a href='https://en.wikipedia.org/wiki/Calinski%E2%80%93Harabasz_index' target='_blank'><b>Calinski-Harabasz</b></a>: {metrics['CHI']:.2f}<br>"
+            f"     <a href='https://en.wikipedia.org/wiki/Silhouette_(clustering)' target='_blank'><b>Silhouette Score</b></a>: {metrics['SIL']:.3f}"
         ),
     )
 
@@ -166,7 +161,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
     height = base_height + K * height_per_cluster
     height = max(500, min(height, 1000))
 
-    return st.plotly_chart(fig, height=height)
+    return st.plotly_chart(fig, height=height, config={"displayModeBar": True})
 
 
 def build_cluster_color_map(cluster_ids: List[int]):
@@ -628,7 +623,8 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
                     )
 
             with st.container(height=800, border=True):
-                for paper in clusters[cluster_id]:
+                sorted_papers = sorted(clusters[cluster_id], key=lambda p: p.published, reverse=True)
+                for paper in sorted_papers:
                     paper_date = paper.published.strftime("%d/%m/%Y")
                     other_cats_html = "".join(f'<div class="paper-other-categories">{cat}</div>' for cat in paper.categories[1:])
 

@@ -427,3 +427,20 @@ div[data-testid="stToggle"] label span {
 div[data-testid="InputInstructions"] {
     display: none !important;
 }
+
+/* ─────────────────────────────────────────────
+   Change tooltip "?" color and size
+───────────────────────────────────────────── */
+div[data-testid="stTooltipIcon"] {
+    transform: scale(1.2);
+    opacity: 1 !important;
+    margin-left: 4px;
+}
+
+div[data-testid="stTooltipIcon"] svg {
+    stroke: var(--uofsc-garnet) !important;
+}
+
+div[data-testid="stTooltipIcon"]:hover {
+    transform: scale(1.4);
+}
