@@ -125,7 +125,7 @@ def build_arxiv_query(keywords: List[str], category: str = "cs") -> Query:
     return category_query & keyword_query
 
 
-def search(keywords: str, start_date: datetime.date, end_date: datetime.date, sort_by: str, category: str) -> List[Paper]:
+def search(keywords: str, start_date: datetime.date, end_date: datetime.date, sort_by: str, category: str, max_results: int = 300) -> List[Paper]:
     """
     Search arXiv for papers matching the specified criteria.
 
@@ -135,6 +135,7 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
         end_date (datetime.date): End date.
         sort_by (str): Sorting method, either 'relevance' or 'submitted'.
         category (str): Specific research category
+        max_results (int): Maximum number of papers to retrieve.
     """
     logging.info("Querying arXiv for papers.")
 
@@ -164,7 +165,7 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
 
     arxiv_search = arxiv.Search(
         query=str(query), 
-        max_results=300, 
+        max_results=max_results, 
         sort_by=arxiv.SortCriterion.Relevance if sort_by == "relevance" else arxiv.SortCriterion.SubmittedDate
     )
 

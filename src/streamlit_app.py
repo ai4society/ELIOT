@@ -33,7 +33,7 @@ class ClusteringMethod(str, Enum):
 
 @st.cache_data(ttl=timedelta(hours=2), max_entries=50, show_spinner=False)
 def search_papers(
-    keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str
+    keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str, max_results: int
 ) -> List[Paper]:
     return search(
         keywords=keywords,
@@ -41,6 +41,7 @@ def search_papers(
         end_date=end_date,
         sort_by=sort_opt,
         category=category_option,
+        max_results=max_results,
     )
 
 
@@ -226,7 +227,8 @@ def load_default_results() -> dict:
         start_date=sd, 
         end_date=ed, 
         sort_by=ORDER_BY_OPTIONS["Relevance"], 
-        category=cat
+        category=cat,
+        max_results=300
     )
     
     res = get_default_session_state()
@@ -285,8 +287,8 @@ with col_category:
         help="Focus your search on a specific research field",
     )
 
-col_start_date, col_end_date, col_order_by, col_search_bt = st.columns(
-    [1, 1, 1.5, 1], vertical_alignment="bottom"
+col_start_date, col_end_date, col_order_by, col_max_results, col_search_bt = st.columns(
+    [1, 1, 1.5, 1.5, 1], vertical_alignment="bottom"
 )
 
 with col_start_date:
@@ -303,6 +305,9 @@ with col_order_by:
     sort_option = st.selectbox(
         "Order By", ORDER_BY_OPTIONS.keys(), help="Order applied to arXiv search"
     )
+
+with col_max_results:
+    max_results = st.slider("Max Papers to Retrieve", min_value=20, max_value=500, value=300, step=10)
 
 with col_search_bt:
     search_button = st.button("Search", use_container_width=True)
@@ -324,6 +329,7 @@ if search_button:
                 end_date=end_date,
                 sort_opt=ORDER_BY_OPTIONS[sort_option],
                 category_option=category_option,
+                max_results=max_results,
             )
             logging.info(f"Search successful: found {len(papers)} papers for keywords '{keywords}' in category '{category_option}'")
 
