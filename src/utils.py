@@ -3,7 +3,7 @@ import logging
 from functools import wraps
 
 def timeit(func):
-    """Decorador para medir o tempo exato de execução de funções pesadas."""
+    """Decorator for measuring the exact time required to perform tasks"""
     @wraps(func)
     def timeit_wrapper(*args, **kwargs):
         start_time = time.perf_counter()

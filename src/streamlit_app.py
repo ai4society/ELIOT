@@ -33,7 +33,7 @@ class ClusteringMethod(str, Enum):
 
 @st.cache_data(ttl=timedelta(hours=2), max_entries=50, show_spinner=False)
 def search_papers(
-    keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str
+    keywords: str, start_date: date, end_date: date, sort_opt: str, category_option: str, max_results: int
 ) -> List[Paper]:
     return search(
         keywords=keywords,
@@ -41,6 +41,7 @@ def search_papers(
         end_date=end_date,
         sort_by=sort_opt,
         category=category_option,
+        max_results=max_results,
     )
 
 
@@ -99,7 +100,6 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             "y": False
         },
         title="Evolution of Research Topics Over Time",
-        template="plotly_white"
     )
 
     fig.update_traces(
@@ -125,7 +125,6 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             tickmode="linear",
             dtick=1,
             showgrid=True,
-            gridcolor="rgba(200,200,200,0.3)",
             zeroline=False,
         ),
         yaxis=dict(
@@ -134,11 +133,8 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
             tickvals=sorted(list(set(cluster_nums))),
             ticktext=[get_cluster_name(c) for c in sorted(list(set(cluster_nums)))],
             showgrid=True,
-            gridcolor="rgba(200,200,200,0.15)",
             zeroline=False,
         ),
-        plot_bgcolor="rgba(250,250,250,0.5)",
-        paper_bgcolor="white",
         hovermode="closest",
         margin=dict(r=200),
     )
@@ -155,9 +151,9 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
         font=dict(size=11),
         text=(
             "Metrics (Based on All Clusters):<br>"
-            f"     <b>Davies-Bouldin</b>: {metrics['DBI']:.2f}<br>"
-            f"     <b>Calinski-Harabasz</b>: {metrics['CHI']:.2f}<br>"
-            f"     <b>Silhouette Score</b>: {metrics['SIL']:.3f}"
+            f"     <a href='https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index' target='_blank'><b>Davies-Bouldin</b></a>: {metrics['DBI']:.2f}<br>"
+            f"     <a href='https://en.wikipedia.org/wiki/Calinski%E2%80%93Harabasz_index' target='_blank'><b>Calinski-Harabasz</b></a>: {metrics['CHI']:.2f}<br>"
+            f"     <a href='https://en.wikipedia.org/wiki/Silhouette_(clustering)' target='_blank'><b>Silhouette Score</b></a>: {metrics['SIL']:.3f}"
         ),
     )
 
@@ -166,7 +162,7 @@ def create_cluster_viz(ordered_papers: List[Paper], all_labels: List[str], metri
     height = base_height + K * height_per_cluster
     height = max(500, min(height, 1000))
 
-    return st.plotly_chart(fig, height=height)
+    return st.plotly_chart(fig, height=height, config={"displayModeBar": True})
 
 
 def build_cluster_color_map(cluster_ids: List[int]):
@@ -191,7 +187,7 @@ def get_default_session_state():
 
 
 st.set_page_config(
-    page_title="Paper Explorer", page_icon="📚", layout="centered"
+    page_title="Eliot", page_icon="📚", layout="centered"
 )
 
 css_path = Path(__file__).parent / "styles.css"
@@ -231,7 +227,8 @@ def load_default_results() -> dict:
         start_date=sd, 
         end_date=ed, 
         sort_by=ORDER_BY_OPTIONS["Relevance"], 
-        category=cat
+        category=cat,
+        max_results=300
     )
     
     res = get_default_session_state()
@@ -262,10 +259,10 @@ if "search_results" not in st.session_state:
         logging.error(f"Failed to load initial cache: {e}")
         st.session_state["search_results"] = get_default_session_state()
 
-st.title("Paper Discovery", anchor=False)
+st.title("Eliot", anchor=False)
 
 st.markdown(
-    "<div class='page-subtitle'>Discover and explore trends in research papers across ArXiv</div>",
+    "<div class='page-subtitle'>Interactively Exploring Fast-Changing Scientific Literature Trends with Online Data and ML</div>",
     unsafe_allow_html=True,
 )
 
@@ -276,9 +273,9 @@ with col_keywords:
         "Search Keywords or Phrases",
         placeholder=f"{DEFAULT_KEYWORDS}",
         help=(
-            "Enter one or more keywords or phrases separated by commas. "
-            "Results include only papers where all keywords are present. "
-            f"If left empty, the default keywords - {DEFAULT_KEYWORDS} - will be used."
+            "Enter comma-separated keywords, each may contain multiple words. "
+            "Results include only papers containing all keywords. "
+            f"If empty, defaults to: {DEFAULT_KEYWORDS}."
         ),
     )
 
@@ -290,8 +287,8 @@ with col_category:
         help="Focus your search on a specific research field",
     )
 
-col_start_date, col_end_date, col_order_by, col_search_bt = st.columns(
-    [1, 1, 1.5, 1], vertical_alignment="bottom"
+col_start_date, col_end_date, col_order_by, col_max_results, col_search_bt = st.columns(
+    [1, 1, 1.5, 1.5, 1], vertical_alignment="bottom"
 )
 
 with col_start_date:
@@ -308,6 +305,9 @@ with col_order_by:
     sort_option = st.selectbox(
         "Order By", ORDER_BY_OPTIONS.keys(), help="Order applied to arXiv search"
     )
+
+with col_max_results:
+    max_results = st.slider("Max Papers to Retrieve", min_value=20, max_value=500, value=300, step=10)
 
 with col_search_bt:
     search_button = st.button("Search", use_container_width=True)
@@ -329,6 +329,7 @@ if search_button:
                 end_date=end_date,
                 sort_opt=ORDER_BY_OPTIONS[sort_option],
                 category_option=category_option,
+                max_results=max_results,
             )
             logging.info(f"Search successful: found {len(papers)} papers for keywords '{keywords}' in category '{category_option}'")
 
@@ -361,16 +362,24 @@ if search_button:
         except ArxivFetchingError as e:
             # When not able to fetch papers for the user's query, show the previous result
             if previous_results.get("searched"):
-                st.warning("We couldn't fetch papers right now. Please try again in a few minutes. In the meantime, we are safely keeping your currently displayed results.")
+                st.warning("We couldn't fetch papers right now due to arXiv rate limiting. Please try again in a few minutes. In the meantime, we are safely keeping your currently displayed results.")
                 st.session_state["search_results"] = previous_results
             else:
-                st.warning("We couldn't fetch papers right now. Please try again in a few minutes. Showing sample papers in the meantime.")
+                st.warning("We couldn't fetch papers right now due to arXiv rate limiting. Please try again in a few minutes. Showing sample papers in the meantime.")
                 st.session_state["search_results"] = load_default_results()
             logging.error(f"ArXiv Fetching Error details: {str(e)}")
 
         except Exception as e:
             st.error("⚠️ An unexpected error occurred")
-            logging.error(f"Unexpected Streamlit error in main loop: {str(e)}", exc_info=True)
+            logging.error(
+                f"\n ERROR DETAILS: {str(e)}\n\n"
+                f"  User search parameters:\n"
+                f"  keywords={keywords or DEFAULT_KEYWORDS}\n"
+                f"  category={category_option}\n"
+                f"  sort={sort_option}\n"
+                f"  date_range={start_date} to {end_date}\n",
+                exc_info=True,
+            )
 
 if st.session_state["search_results"].get("searched") and st.session_state["search_results"].get("papers"):
     papers = st.session_state["search_results"].get("papers")
@@ -527,10 +536,10 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
 
                 metrics = st.session_state["search_results"].get("metrics")
                 create_cluster_viz(ordered_papers, all_labels, {
-                    "DBI": metrics["DBI"],
-                    "CHI": metrics["CHI"],
-                    "SIL": metrics["SIL"]
-                    })
+                    "DBI": metrics.get("DBI", 0.0),
+                    "CHI": metrics.get("CHI", 0.0),
+                    "SIL": metrics.get("SIL", 0.0),
+                })
             except Exception as e:
                 st.warning("Visualization failed")
                 logging.error(f"Visualization failed: {e}")
@@ -559,6 +568,26 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
         visible_tab_ids = cluster_ids
 
     tab_titles = [get_cluster_name(cid) for cid in visible_tab_ids]
+
+    if not tab_titles:
+        logging.error(
+            f"Empty tab_titles detected:\n"
+            f"  keywords={keywords or DEFAULT_KEYWORDS}\n"
+            f"  category={category_option}\n"
+            f"  sort={sort_option}\n"
+            f"  date_range={start_date} to {end_date}\n"
+            f"  papers_count={len(papers)}\n"
+            f"  clustering_active={clustering_active}\n"
+            f"  visible_tab_ids={visible_tab_ids}\n"
+            f"  cluster_ids={cluster_ids}\n"
+            f"  session_searched={st.session_state['search_results'].get('searched')}\n"
+            f"  session_metrics={st.session_state['search_results'].get('metrics')}"
+        )
+        # Fallback to ensure at least the "All Papers" tab is shown
+        clusters[ALL_PAPERS_TAB_KEY] = papers
+        visible_tab_ids = [ALL_PAPERS_TAB_KEY]
+        tab_titles = [get_cluster_name(ALL_PAPERS_TAB_KEY)]
+        st.warning("⚠️ Unable to display clusters. Please try searching again.")
     tabs = st.tabs(tab_titles)
 
     for tab, cluster_id in zip(tabs, visible_tab_ids):
@@ -599,34 +628,45 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
                         unsafe_allow_html=True
                     )
 
-            for paper in clusters[cluster_id]:
-                paper_date = paper.published.strftime("%d/%m/%Y")
-                other_cats_html = "".join(f'<div class="paper-other-categories">{cat}</div>' for cat in paper.categories[1:])
+            with st.container(height=800, border=True):
+                sorted_papers = sorted(clusters[cluster_id], key=lambda p: p.published, reverse=True)
+                for paper in sorted_papers:
+                    paper_date = paper.published.strftime("%d/%m/%Y")
+                    other_cats_html = "".join(f'<div class="paper-other-categories">{cat}</div>' for cat in paper.categories[1:])
 
-                paper_html = f"""
-                <div class="paper-card">
-                    <div class="paper-title">{paper.title}</div>
-                    <div class="paper-categories">
-                        <div class="paper-main-category tooltip">{paper.main_category}<span class="tooltiptext">Primary Category</span></div>{other_cats_html}
+                    paper_html = f"""
+                    <div class="paper-card">
+                        <div class="paper-title">{paper.title}</div>
+                        <div class="paper-categories">
+                            <div class="paper-main-category tooltip">{paper.main_category}<span class="tooltiptext">Primary Category</span></div>{other_cats_html}
+                        </div>
+                        <div class="paper-metadata">
+                            <span>📅 {paper_date}</span>
+                            <span>🔗 <a href="{paper.link}">View on arXiv</a></span>
+                        </div>
                     </div>
-                    <div class="paper-metadata">
-                        <span>📅 {paper_date}</span>
-                        <span>🔗 <a href="{paper.link}">View on arXiv</a></span>
-                    </div>
-                </div>
+                    """
+                    st.markdown(paper_html, unsafe_allow_html=True)
+
+                    with st.expander("View details"):
+                        authors_str = ", ".join(paper.authors)
+                        st.markdown(
+                            f"""
+                            <div class='paper-authors'><strong>Authors:</strong> {authors_str}</div>
+                            [📄 <a href='{paper.pdf_link}'>PDF</a>]
+                            <div class='paper-abstract'><strong>Abstract</strong><br>{paper.abstract}</div>
+                        """,
+                            unsafe_allow_html=True,
+                        )
+
+            st.markdown(
                 """
-                st.markdown(paper_html, unsafe_allow_html=True)
-
-                with st.expander("View details"):
-                    authors_str = ", ".join(paper.authors)
-                    st.markdown(
-                        f"""
-                        <div class='paper-authors'><strong>Authors:</strong> {authors_str}</div>
-                        [📄 <a href='{paper.pdf_link}'>PDF</a>]
-                        <div class='paper-abstract'><strong>Abstract</strong><br>{paper.abstract}</div>
-                    """,
-                        unsafe_allow_html=True,
-                    )
+                <div style="font-size: 0.85rem; color: #777">
+                    Thank you to arXiv for use of its open access interoperability.
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
 # Empty state
 elif st.session_state["search_results"].get("searched") and not st.session_state["search_results"].get("papers"):

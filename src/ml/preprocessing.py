@@ -91,16 +91,16 @@ def clean_and_lemmatize(text: str) -> str:
     return " ".join(lemmas)
 
 
-@st.cache_data(ttl=timedelta(hours=1), max_entries=25, show_spinner=False)
 @timeit
+@st.cache_data(ttl=timedelta(hours=1), max_entries=25, show_spinner=False)
 def preprocess_texts(papers: List[Paper]) -> List[str]:
     """Cleans and lemmatizes texts. Returns preprocessed strings."""
     logging.info(f"Preprocessing & Lemmatizing {len(papers)} papers...")
     return [clean_and_lemmatize(doc) for doc in [p.title + " " + p.abstract for p in papers]]
 
 
-@st.cache_data(ttl=timedelta(hours=1), max_entries=25, show_spinner=False)
 @timeit
+@st.cache_data(ttl=timedelta(hours=1), max_entries=25, show_spinner=False)
 def embed_and_reduce(cleaned_texts: List[str]) -> np.ndarray:
     """Embeds texts and reduces dimensionality for clustering."""
     logging.info("Embedding & Reducing dimensionality...")
