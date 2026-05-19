@@ -1,7 +1,7 @@
 [project]
 name = "paper-searcher"
 version = "0.1.0"
-description = "Add your description here"
+description = "Traceable arXiv literature exploration with clustering and temporal visualization"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
