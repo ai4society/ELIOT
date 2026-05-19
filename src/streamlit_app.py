@@ -362,10 +362,10 @@ if search_button:
         except ArxivFetchingError as e:
             # When not able to fetch papers for the user's query, show the previous result
             if previous_results.get("searched"):
-                st.warning("We couldn't fetch papers right now. Please try again in a few minutes. In the meantime, we are safely keeping your currently displayed results.")
+                st.warning("We couldn't fetch papers right now due to arXiv rate limiting. Please try again in a few minutes. In the meantime, we are safely keeping your currently displayed results.")
                 st.session_state["search_results"] = previous_results
             else:
-                st.warning("We couldn't fetch papers right now. Please try again in a few minutes. Showing sample papers in the meantime.")
+                st.warning("We couldn't fetch papers right now due to arXiv rate limiting. Please try again in a few minutes. Showing sample papers in the meantime.")
                 st.session_state["search_results"] = load_default_results()
             logging.error(f"ArXiv Fetching Error details: {str(e)}")
 
@@ -658,6 +658,15 @@ if st.session_state["search_results"].get("searched") and st.session_state["sear
                         """,
                             unsafe_allow_html=True,
                         )
+
+            st.markdown(
+                """
+                <div style="font-size: 0.85rem; color: #777">
+                    Thank you to arXiv for use of its open access interoperability.
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
 # Empty state
 elif st.session_state["search_results"].get("searched") and not st.session_state["search_results"].get("papers"):
