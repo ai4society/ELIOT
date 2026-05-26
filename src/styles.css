@@ -28,7 +28,8 @@ body,
     max-width: 55rem !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-    padding-top: 4rem !important; /* Forces a smaller distance from the top header */
+    padding-top: 4rem !important;
+    /* Forces a smaller distance from the top header */
 }
 
 /* ─────────────────────────────────────────────
@@ -80,6 +81,17 @@ div[data-testid="stRadio"]>label p {
 .header-link:hover {
     opacity: 0.7;
     color: var(--uofsc-black) !important;
+}
+
+.views-badge {
+    margin-left: 0.8rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--uofsc-garnet);
+    background: rgba(115, 0, 10, 0.07);
+    border: 1px solid rgba(115, 0, 10, 0.2);
+    border-radius: 20px;
+    padding: 0.2rem 0.7rem;
 }
 
 /* ─────────────────────────────────────────────
