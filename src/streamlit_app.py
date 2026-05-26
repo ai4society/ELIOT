@@ -1,15 +1,18 @@
-import logging
+import requests
 from datetime import date, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import List
+import logging
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit.components.v1 as components
 
 from arxiv_searcher import ARXIV_CATEGORIES, Paper, search
+
 from exceptions import (
     ArxivFetchingError,
     ArxivSearcherError,
@@ -186,6 +189,46 @@ def get_default_session_state():
     }
 
 
+GOATCOUNTER_DOMAIN = "bernardo.goatcounter.com"
+GOATCOUNTER_PATH = "/eliot"
+# Manual offset based on the visit count shown in Streamlit Cloud analytics
+# Before GoatCounter was added
+INITIAL_VISIT_COUNT = 58
+
+def register_goatcounter_visit() -> None:
+    components.html(
+        f"""
+        <script>
+            window.goatcounter = {{
+                allow_frame: true,
+                path: "{GOATCOUNTER_PATH}",
+                title: "Eliot"
+            }};
+        </script>
+
+        <script data-goatcounter="https://{GOATCOUNTER_DOMAIN}/count"
+                async src="https://gc.zgo.at/count.js"></script>
+        """,
+        height=1,
+    )
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def fetch_goatcounter_visitors() -> str:
+    """Fetch the app visit count from GoatCounter, cached for 30 minutes."""
+
+    url = f"https://{GOATCOUNTER_DOMAIN}/counter/{GOATCOUNTER_PATH.lstrip('/')}.json"
+
+    try:
+        r = requests.get(url, timeout=5)
+        r.raise_for_status()
+        data = r.json()
+        return str(int(data["count"]) + INITIAL_VISIT_COUNT)
+    except Exception as e:
+        print(f"Error getting GoatCounter views: {e}")
+        return "-"
+
+
 st.set_page_config(
     page_title="Eliot", page_icon="📚", layout="centered"
 )
@@ -194,9 +237,13 @@ css_path = Path(__file__).parent / "styles.css"
 with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# header link
+register_goatcounter_visit()
+
 st.markdown(
-    '<div class="header-bar"><a href="https://ai4society.github.io/" target="_blank" class="header-link">AI4Society</a></div>',
+    '<div class="header-bar">'
+    '<a href="https://ai4society.github.io/" target="_blank" class="header-link">AI4Society</a>'
+    f'<span class="views-badge">App Views: {fetch_goatcounter_visitors()}</span>'
+    '</div>',
     unsafe_allow_html=True,
 )
 
