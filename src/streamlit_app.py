@@ -194,6 +194,8 @@ GOATCOUNTER_PATH = "/eliot"
 # Manual offset based on the visit count shown in Streamlit Cloud analytics
 # Before GoatCounter was added
 INITIAL_VISIT_COUNT = 58
+# Date when view tracking began
+VIEWS_SINCE_DATE = "May 2026"
 
 def register_goatcounter_visit() -> None:
     components.html(
@@ -241,8 +243,11 @@ register_goatcounter_visit()
 
 st.markdown(
     '<div class="header-bar">'
-    '<a href="https://ai4society.github.io/" target="_blank" class="header-link">AI4Society</a>'
-    f'<span class="views-badge">App Views: {fetch_goatcounter_visitors()}</span>'
+        '<a href="https://ai4society.github.io/" target="_blank" class="header-link">AI4Society</a>'
+        '<div class="views-badge-wrapper">'
+            f'<span class="views-badge">App Views: {fetch_goatcounter_visitors()}</span>'
+            f'<span class="views-badge-since">Since {VIEWS_SINCE_DATE}</span>'
+        '</div>'
     '</div>',
     unsafe_allow_html=True,
 )
