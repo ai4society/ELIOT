@@ -10,6 +10,8 @@ import arxiv
 from arxivql.taxonomy import categories_by_id
 from arxivql import Query, Taxonomy as T
 
+from streamlit import cache_resource
+
 import pandas as pd
 from exceptions import (
     InvalidCategoryError,
@@ -152,7 +154,7 @@ def search(keywords: str, start_date: datetime.date, end_date: datetime.date, so
 
     client = arxiv.Client(
         page_size=300,
-        delay_seconds=8,
+        delay_seconds=3, # At each 300 papers retrieved, there will be a delay of 3 seconds
         num_retries=4
     )
     query = build_arxiv_query(keywords=keywords, category=category)
